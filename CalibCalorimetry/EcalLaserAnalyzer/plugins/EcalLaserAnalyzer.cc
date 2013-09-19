@@ -110,15 +110,27 @@ pnID(-1), moduleID(-1), channelIteratorEE(0)
   resdir_                 = iConfig.getUntrackedParameter<std::string>("resDir");
   pncorfile_              = iConfig.getUntrackedParameter<std::string>("pnCorFile");
 
-  digiCollection_         = iConfig.getParameter<std::string>("digiCollection");
-  digiPNCollection_       = iConfig.getParameter<std::string>("digiPNCollection");
-  digiProducer_           = iConfig.getParameter<std::string>("digiProducer");
+  // get tags
+  eventHeaderTag_ = edm::InputTag(
+    iConfig.getParameter<std::string>("eventHeaderProducer"),
+    iConfig.getParameter<std::string>("eventHeaderCollection"));
 
-  eventHeaderCollection_  = iConfig.getParameter<std::string>("eventHeaderCollection");
-  eventHeaderProducer_    = iConfig.getParameter<std::string>("eventHeaderProducer");
+  digiTag_ = edm::InputTag(
+    iConfig.getParameter<std::string>("digiProducer"),
+    iConfig.getParameter<std::string>("digiCollection"));
 
+  digiPNTag_ = edm::InputTag(
+    iConfig.getParameter<std::string>("digiProducer"),
+    iConfig.getParameter<std::string>("digiPNCollection"));
 
-  // Geometrical constants initialization 
+  // register access tokens
+  eventHeaderToken_ = consumes<edm::SortedCollection<EcalDCCHeaderBlock, edm::StrictWeakOrdering<EcalDCCHeaderBlock> > >(eventHeaderTag_);
+  digiPNToken_ = consumes<edm::SortedCollection<EcalPnDiodeDigi, edm::StrictWeakOrdering<EcalPnDiodeDigi> > >(digiPNTag_);
+
+  EBDigiToken_ = consumes<EBDigiCollection>(digiTag_);
+  EEDigiToken_ = consumes<EEDigiCollection>(digiTag_);
+
+  // Geometrical constants initialization
 
   if (_ecalPart == "EB") {
     nCrys    = NCRYSEB;
@@ -316,11 +328,11 @@ void EcalLaserAnalyzer:: analyze( const edm::Event & e, const  edm::EventSetup& 
   edm::Handle<EcalRawDataCollection> pDCCHeader;
   const  EcalRawDataCollection* DCCHeader=0;
   try {
-    e.getByLabel(eventHeaderProducer_,eventHeaderCollection_, pDCCHeader);
+    e.getByToken(eventHeaderToken_, pDCCHeader);
     DCCHeader=pDCCHeader.product();
   }catch ( std::exception& ex ) {
-    std::cerr << "Error! can't get the product retrieving DCC header" << 
-      eventHeaderCollection_.c_str() <<" "<< eventHeaderProducer_.c_str() << std::endl;
+    std::cerr << "Error! can't get the product retrieving DCC header" <<
+      eventHeaderTag_ << std::endl;
   }
  
   //retrieving crystal data from Event
@@ -333,20 +345,22 @@ void EcalLaserAnalyzer:: analyze( const edm::Event & e, const  edm::EventSetup& 
 
   if (_ecalPart == "EB") {
     try {
-      e.getByLabel(digiProducer_,digiCollection_, pEBDigi); 
-      EBDigi=pEBDigi.product(); 
+      e.getByToken(EBDigiToken_, pEBDigi);
+      EBDigi=pEBDigi.product();
     }catch ( std::exception& ex ) {
-      std::cerr << "Error! can't get the product retrieving EB crystal data " << 
-	digiCollection_.c_str() << std::endl;
-    } 
+      // @TODO a bug; should return or rethrow; next access to this variable will segfault
+      std::cerr << "Error! can't get the product retrieving EB crystal data " <<
+        digiTag_ << std::endl;
+    }
   } else if (_ecalPart == "EE") {
     try {
-      e.getByLabel(digiProducer_,digiCollection_, pEEDigi); 
-      EEDigi=pEEDigi.product(); 
+      e.getByToken(EEDigiToken_, pEEDigi);
+      EEDigi=pEEDigi.product();
     }catch ( std::exception& ex ) {
-      std::cerr << "Error! can't get the product retrieving EE crystal data " << 
-	digiCollection_.c_str() << std::endl;
-    } 
+      // @TODO a bug; should return or rethrow; next access to this variable will segfault
+      std::cerr << "Error! can't get the product retrieving EE crystal data " <<
+        digiTag_ << std::endl;
+    }
   } else {
     std::cout <<" Wrong ecalPart in cfg file " << std::endl;
     return;
@@ -357,10 +371,11 @@ void EcalLaserAnalyzer:: analyze( const edm::Event & e, const  edm::EventSetup& 
   edm::Handle<EcalPnDiodeDigiCollection>  pPNDigi;
   const  EcalPnDiodeDigiCollection* PNDigi=0;
   try {
-    e.getByLabel(digiProducer_, pPNDigi);
-    PNDigi=pPNDigi.product(); 
+    e.getByToken(digiPNToken_, pPNDigi);
+    PNDigi=pPNDigi.product();
   }catch ( std::exception& ex ) {
-    std::cerr << "Error! can't get the product " << digiPNCollection_.c_str() << std::endl;
+    // @TODO a bug; should return or rethrow; next access to this variable will segfault
+    std::cerr << "Error! can't get the product " << digiPNTag_ << std::endl;
   }
 
   // retrieving electronics mapping

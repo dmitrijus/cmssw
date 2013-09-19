@@ -101,17 +101,19 @@ class EcalLaserAnalyzerYousi : public edm::EDAnalyzer {
 
   //parameters
 
-  std::string hitCollection_ ;
-  std::string hitProducer_ ;
   //  std::string PNFileName_ ;
   //  std::string ABFileName_ ;
   std::string outFileName_ ;
   std::string SM_ ;
   std::string Run_ ;
-  std::string digiProducer_ ;
-  std::string PNdigiCollection_ ;
 
+  edm::InputTag eventHeaderTag_;
+  edm::InputTag digiPNTag_;
+  edm::InputTag hitTag_;
 
+  edm::EDGetTokenT<edm::SortedCollection<EcalDCCHeaderBlock, edm::StrictWeakOrdering<EcalDCCHeaderBlock> > > eventHeaderToken_;
+  edm::EDGetTokenT<edm::SortedCollection<EcalPnDiodeDigi, edm::StrictWeakOrdering<EcalPnDiodeDigi> > > digiPNToken_;
+  edm::EDGetTokenT<edm::SortedCollection<EcalUncalibratedRecHit, edm::StrictWeakOrdering<EcalUncalibratedRecHit> > > hitToken_;
 };
 
 //
@@ -131,19 +133,29 @@ EcalLaserAnalyzerYousi::EcalLaserAnalyzerYousi(const edm::ParameterSet& iConfig)
   //get the PN and AB file names
   //get the output file names, digi producers, etc
 
-  hitCollection_ = iConfig.getUntrackedParameter<std::string>("hitCollection");
-  hitProducer_ = iConfig.getUntrackedParameter<std::string>("hitProducer");
   //  PNFileName_ = iConfig.getUntrackedParameter<std::string>("PNFileName");
   //  ABFileName_ = iConfig.getUntrackedParameter<std::string>("ABFileName");
   outFileName_ = iConfig.getUntrackedParameter<std::string>("outFileName");
   SM_ = iConfig.getUntrackedParameter<std::string>("SM");
   Run_ = iConfig.getUntrackedParameter<std::string>("Run");
-  digiProducer_ = iConfig.getUntrackedParameter<std::string>("digiProducer");
-  PNdigiCollection_ = iConfig.getUntrackedParameter<std::string>("PNdigiCollection");
 
 
+  // @TODO Should not use UntrackedParameters
+  // @TODO Instance is not defined (digiCollection)
+  eventHeaderTag_ = edm::InputTag(
+    iConfig.getUntrackedParameter<std::string>("digiProducer"));
 
+  digiPNTag_ = edm::InputTag(
+    iConfig.getUntrackedParameter<std::string>("digiProducer"),
+    iConfig.getUntrackedParameter<std::string>("PNdigiCollection"));
 
+  hitTag_ = edm::InputTag(
+    iConfig.getUntrackedParameter<std::string>("hitProducer"),
+    iConfig.getUntrackedParameter<std::string>("hitCollection"));
+
+  eventHeaderToken_ = consumes<edm::SortedCollection<EcalDCCHeaderBlock, edm::StrictWeakOrdering<EcalDCCHeaderBlock> > >(eventHeaderTag_);
+  digiPNToken_ = consumes<edm::SortedCollection<EcalPnDiodeDigi, edm::StrictWeakOrdering<EcalPnDiodeDigi> > >(digiPNTag_);
+  hitToken_ = consumes<edm::SortedCollection<EcalUncalibratedRecHit, edm::StrictWeakOrdering<EcalUncalibratedRecHit> > >(hitTag_);
 }
 
 
@@ -173,7 +185,7 @@ EcalLaserAnalyzerYousi::analyze(const edm::Event& iEvent, const edm::EventSetup&
 
 
    edm::Handle<EcalRawDataCollection> DCCHeaders;
-   iEvent.getByLabel(digiProducer_, DCCHeaders);
+   iEvent.getByToken(eventHeaderToken_, DCCHeaders);
  
    EcalDCCHeaderBlock::EcalDCCEventSettings settings = DCCHeaders->begin()->getEventSettings();
 
@@ -186,23 +198,23 @@ EcalLaserAnalyzerYousi::analyze(const edm::Event& iEvent, const edm::EventSetup&
    edm::Handle<EBUncalibratedRecHitCollection> hits;
 
    try{ 
-     iEvent.getByLabel(hitProducer_ , hitCollection_ , hits);
+     iEvent.getByToken(hitToken_, hits);
      //     iEvent.getByType(hits);
    } catch ( std::exception& ex ) {
     LogError("EcalLaserAnalyzerYousi") << "Cannot get product:  EBRecHitCollection from: " 
-				    << hitCollection_ << " - returning.\n\n";
+				    << hitTag_ << " - returning.\n\n";
+    // @TODO a bug; should return or rethrow; next access to this variable will segfault
     //    return;
    }
    
    edm::Handle<EcalPnDiodeDigiCollection> pndigis;
 
    try{ 
-     //     iEvent.getByLabel(hitProducer_, hits);
-          iEvent.getByLabel(digiProducer_, PNdigiCollection_, pndigis);
-     //iEvent.getByType( pndigis );
+     iEvent.getByToken(digiPNToken_, pndigis);
    } catch ( std::exception& ex ) {
     LogError("EcalLaserAnalyzerYousi") << "Cannot get product:  EBdigiCollection from: " 
 				    << "getbytype" << " - returning.\n\n";
+    // @TODO a bug; should return or rethrow; next access to this variable will segfault
     //    return;
    }
 

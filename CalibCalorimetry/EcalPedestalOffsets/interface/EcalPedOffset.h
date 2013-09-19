@@ -20,6 +20,10 @@
 #include "CalibCalorimetry/EcalPedestalOffsets/interface/TPedValues.h"
 #include "CalibCalorimetry/EcalPedestalOffsets/interface/TPedResult.h"
 
+#include "DataFormats/EcalDigi/interface/EcalDigiCollections.h"
+#include "DataFormats/EcalRawData/interface/EcalDCCHeaderBlock.h"
+#include "DataFormats/EcalRawData/interface/EcalRawDataCollections.h"
+
 class EBDigiCollection;
 class EEDigiCollection;
 
@@ -66,6 +70,11 @@ class EcalPedOffset: public edm::EDAnalyzer
     edm::InputTag m_barrelDigiCollection; //!< secondary name given to collection of digis
     edm::InputTag m_endcapDigiCollection; //!< secondary name given to collection of digis
     edm::InputTag m_headerCollection; //!< name of module/plugin/producer making headers
+
+    edm::EDGetTokenT<edm::SortedCollection<EcalDCCHeaderBlock, edm::StrictWeakOrdering<EcalDCCHeaderBlock> > > m_headerCollectionToken;
+    edm::EDGetTokenT<EBDigiCollection> m_barrelDigiCollectionToken;
+    edm::EDGetTokenT<EEDigiCollection> m_endcapDigiCollectionToken;
+
 
     std::string m_xmlFile;        //!< name of the xml file to be saved
 

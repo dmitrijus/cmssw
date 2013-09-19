@@ -5,6 +5,9 @@
 
 #include <memory>
 #include <FWCore/Framework/interface/EDAnalyzer.h>
+#include <DataFormats/EcalDigi/interface/EcalDigiCollections.h>
+#include <DataFormats/EcalRawData/interface/EcalRawDataCollections.h>
+#include <TBDataFormats/EcalTBObjects/interface/EcalTBEventHeader.h>
 
 class Timestamp;
 
@@ -32,8 +35,12 @@ class EcalStatusAnalyzer: public edm::EDAnalyzer{
 
   std::string  resdir_;
   std::string  statusfile_;
-  std::string  eventHeaderCollection_;
-  std::string  eventHeaderProducer_;
+
+  edm::InputTag eventHeaderTag_;
+  edm::InputTag TBEventHeaderTag_;
+
+  edm::EDGetTokenT<edm::SortedCollection<EcalDCCHeaderBlock, edm::StrictWeakOrdering<EcalDCCHeaderBlock> > > eventHeaderToken_;
+  edm::EDGetTokenT<EcalTBEventHeader> TBEventHeaderToken_;
       
   std::map <int,int> isFedLasCreated;
   std::map <int,int> isFedTPCreated;

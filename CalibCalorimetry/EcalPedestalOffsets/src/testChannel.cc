@@ -15,9 +15,6 @@
 
 //! ctor
 testChannel::testChannel (const edm::ParameterSet& paramSet) :
-  m_digiCollection (paramSet.getParameter<std::string> ("digiCollection")) ,
-  m_digiProducer (paramSet.getParameter<std::string> ("digiProducer")) ,
-  m_headerProducer (paramSet.getParameter<std::string> ("headerProducer")) ,
   m_xmlFile (paramSet.getParameter<std::string> ("xmlFile")) ,
   m_DACmin (paramSet.getParameter<int> ("DACmin")) ,
   m_DACmax (paramSet.getParameter<int> ("DACmax")) ,
@@ -29,6 +26,20 @@ testChannel::testChannel (const edm::ParameterSet& paramSet) :
   m_singlePedVSDAC_2 ("singlePedVSDAC_2","pedVSDAC (g2) for xtal "+m_xtal,100,150,250,m_DACmax-m_DACmin,m_DACmin,m_DACmax) ,
   m_singlePedVSDAC_3 ("singlePedVSDAC_3","pedVSDAC (g3) for xtal "+m_xtal,100,150,250,m_DACmax-m_DACmin,m_DACmin,m_DACmax)
 {
+  m_headerCollectionTag = edm::InputTag(
+    paramSet.getParameter<std::string>("headerProducer"));
+
+  // @TODO digiCollection was defined, but was never used.
+  // It should be removed and the whole thing converted to use tags.
+  m_barrelDigiCollectionTag = edm::InputTag(
+    paramSet.getParameter<std::string>("digiProducer"));
+
+  m_headerCollectionToken =
+    consumes<edm::SortedCollection<EcalDCCHeaderBlock, edm::StrictWeakOrdering<EcalDCCHeaderBlock> > >(m_headerCollectionTag);
+
+  m_barrelDigiCollectionToken = consumes<EBDigiCollection>(m_barrelDigiCollectionTag);
+
+
   edm::LogInfo ("testChannel") << " reading "
                                << " m_DACmin: " << m_DACmin
                                << " m_DACmax: " << m_DACmax
@@ -59,11 +70,11 @@ void testChannel::analyze (edm::Event const& event,
    // get the headers
    // (one header for each supermodule)
    edm::Handle<EcalRawDataCollection> DCCHeaders ;
-   event.getByLabel (m_headerProducer, DCCHeaders) ;
+   event.getByToken(m_headerCollectionToken, DCCHeaders) ;
    if(!DCCHeaders.isValid())
    {
      edm::LogError ("testChannel") << "Error! can't get the product " 
-                                   << m_headerProducer.c_str () ;
+                                   << m_headerCollectionTag;
    }
 
    std::map <int,int> DACvalues ;
@@ -82,11 +93,11 @@ void testChannel::analyze (edm::Event const& event,
    // get the digis
    // (one digi for each crystal)
    edm::Handle<EBDigiCollection> pDigis;
-   event.getByLabel (m_digiProducer, pDigis) ;
+   event.getByToken(m_barrelDigiCollectionToken, pDigis) ;
    if(!pDigis.isValid())
    {
      edm::LogError ("testChannel") << "Error! can't get the product " 
-                                   << m_digiCollection.c_str () ;
+                                   << m_barrelDigiCollectionTag;
    }
    
    // loop over the digis

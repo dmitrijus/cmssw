@@ -2,6 +2,9 @@
 
 #include <memory>
 #include <FWCore/Framework/interface/EDAnalyzer.h>
+#include <DataFormats/EcalDigi/interface/EcalDigiCollections.h>
+#include <DataFormats/EcalRawData/interface/EcalRawDataCollections.h>
+
 
 
 class TTree;
@@ -28,12 +31,13 @@ class EcalPerEvtMatacqAnalyzer: public edm::EDAnalyzer{
  private:
     
   std::string resdir_;
-  std::string digiCollection_;
-  std::string digiProducer_;
-  std::string eventHeaderCollection_;
-  std::string eventHeaderProducer_;
-
   std::string outfile;
+
+  edm::InputTag digiTag_;
+  edm::InputTag eventHeaderTag_;
+  
+  edm::EDGetTokenT<edm::SortedCollection<EcalDCCHeaderBlock, edm::StrictWeakOrdering<EcalDCCHeaderBlock> > > eventHeaderToken_;                   
+  edm::EDGetTokenT<edm::SortedCollection<EcalMatacqDigi, edm::StrictWeakOrdering<EcalMatacqDigi> > > digiToken_; 
 
   int iEvent;
 

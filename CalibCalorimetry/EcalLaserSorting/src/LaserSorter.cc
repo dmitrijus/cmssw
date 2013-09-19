@@ -97,9 +97,10 @@ LaserSorter::LaserSorter(const edm::ParameterSet& pset)
     iNoEcalDataMess_(0),
     maxNoEcalDataMess_(pset.getParameter<int>("maxNoEcalDataMess")),
     lumiBlockSpan_(pset.getParameter<int>("lumiBlockSpan")),
-    fedRawDataCollectionTag_(pset.getParameter<edm::InputTag>("fedRawDataCollectionTag")),
     stats_(stats_init)
 {
+  fedRawDataCollectionTag_ = pset.getParameter<edm::InputTag>("fedRawDataCollectionTag");
+  fedRawDataCollectionToken_ = consumes<FEDRawDataCollection>(fedRawDataCollectionTag_);
 
   gettimeofday(&timer_, 0);
   logFile_.open("eventSelect.log", ios::app | ios::out); 
@@ -198,7 +199,7 @@ LaserSorter::analyze(const edm::Event& event, const edm::EventSetup& es){
   }
   
   edm::Handle<FEDRawDataCollection> rawdata;
-  event.getByLabel(fedRawDataCollectionTag_, rawdata);  
+  event.getByToken(fedRawDataCollectionToken_, rawdata);  
   
   //The "detailed trigger type DCC field content:
   double dttProba = 0;

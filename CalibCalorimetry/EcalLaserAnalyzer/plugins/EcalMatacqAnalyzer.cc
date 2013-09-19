@@ -72,12 +72,16 @@ event(0), color(-1), maxsamp(0), nsamples(0), tt(0)
   
   resdir_                  = iConfig.getUntrackedParameter<std::string>("resDir");
   
-  digiCollection_          = iConfig.getParameter<std::string>("digiCollection");
-  digiProducer_            = iConfig.getParameter<std::string>("digiProducer");
-  
-  eventHeaderCollection_   = iConfig.getParameter<std::string>("eventHeaderCollection");
-  eventHeaderProducer_     = iConfig.getParameter<std::string>("eventHeaderProducer");
-  
+  eventHeaderTag_ = edm::InputTag(
+    iConfig.getParameter<std::string>("eventHeaderProducer"),
+    iConfig.getParameter<std::string>("eventHeaderCollection"));
+
+  digiTag_ = edm::InputTag(
+    iConfig.getParameter<std::string>("digiProducer"),
+    iConfig.getParameter<std::string>("digiCollection"));
+
+  eventHeaderToken_ = consumes<edm::SortedCollection<EcalDCCHeaderBlock, edm::StrictWeakOrdering<EcalDCCHeaderBlock> > >(eventHeaderTag_);
+  digiToken_ = consumes<edm::SortedCollection<EcalMatacqDigi, edm::StrictWeakOrdering<EcalMatacqDigi> > >(digiTag_);
 }
 
 //========================================================================
@@ -154,13 +158,12 @@ void EcalMatacqAnalyzer:: analyze( const edm::Event & e, const  edm::EventSetup&
   edm::Handle<EcalMatacqDigiCollection> pmatacqDigi;
   const EcalMatacqDigiCollection* matacqDigi=0;
   try {
-    e.getByLabel(digiProducer_,digiCollection_, pmatacqDigi); 
+    e.getByToken(digiToken_, pmatacqDigi);
     matacqDigi=pmatacqDigi.product();
-    if (_debug==1 )std::cout << "-- debug test -- Matacq Digis Found -- "<< std::endl; 
-    
-  }catch ( std::exception& ex ) {
-    std::cerr << "Error! can't get the product EcalMatacqDigi producer:" << digiProducer_.c_str()<<" collection:"<<digiCollection_.c_str() << std::endl;
-    if (_debug==1 )std::cout << "-- debug test -- No Matacq Digis Found -- "<< std::endl; 
+    if (_debug==1 )std::cout << "-- debug test -- Matacq Digis Found -- " << std::endl;
+  } catch ( std::exception& ex ) {
+    std::cerr << "Error! can't get the product EcalMatacqDigi tag: " << digiTag_ << std::endl;
+    if (_debug==1 )std::cout << "-- debug test -- No Matacq Digis Found -- " << std::endl;
     return;
   }
   
@@ -169,10 +172,10 @@ void EcalMatacqAnalyzer:: analyze( const edm::Event & e, const  edm::EventSetup&
   edm::Handle<EcalRawDataCollection> pDCCHeader;
   const  EcalRawDataCollection* DCCHeader=0;
   try {
-    e.getByLabel(eventHeaderProducer_,eventHeaderCollection_, pDCCHeader);
+    e.getByToken(eventHeaderToken_, pDCCHeader);
     DCCHeader=pDCCHeader.product();
   }catch ( std::exception& ex ) {
-    std::cerr << "Error! can't get the product EcalRawData producer:" << eventHeaderProducer_.c_str()<<" collection:"<<eventHeaderCollection_.c_str() << std::endl;
+    std::cerr << "Error! can't get the product EcalRawData tag:" << eventHeaderTag_ << std::endl;
     return;
   }
 

@@ -92,12 +92,16 @@ EcnaAnalyzer::EcnaAnalyzer(const edm::ParameterSet& pSet) :
 
   //========================================================================================== 
   //.................................. Get parameter values from python file
-  eventHeaderProducer_   = pSet.getParameter<std::string>("eventHeaderProducer");
-  digiProducer_          = pSet.getParameter<std::string>("digiProducer");
+  std::string eventHeaderProducer = pSet.getParameter<std::string>("eventHeaderProducer");
+  std::string digiProducer        = pSet.getParameter<std::string>("digiProducer");
 
-  eventHeaderCollection_ = pSet.getParameter<std::string>("eventHeaderCollection");
-  EBdigiCollection_      = pSet.getParameter<std::string>("EBdigiCollection");
-  EEdigiCollection_      = pSet.getParameter<std::string>("EEdigiCollection");
+  eventHeaderTag_ = edm::InputTag(eventHeaderProducer, pSet.getParameter<std::string>("eventHeaderCollection"));
+  EBDigiTag_ = edm::InputTag(digiProducer, pSet.getParameter<std::string>("EBdigiCollection"));
+  EEDigiTag_ = edm::InputTag(digiProducer, pSet.getParameter<std::string>("EEdigiCollection"));
+
+  eventHeaderToken_ = consumes<edm::SortedCollection<EcalDCCHeaderBlock, edm::StrictWeakOrdering<EcalDCCHeaderBlock> > >(eventHeaderTag_);
+  EBdigiToken_ = consumes<EBDigiCollection>(EBDigiTag_);
+  EEdigiToken_ = consumes<EEDigiCollection>(EEDigiTag_);
 
   sAnalysisName_  = pSet.getParameter<std::string>("sAnalysisName");
   sNbOfSamples_   = pSet.getParameter<std::string>("sNbOfSamples");
@@ -597,11 +601,13 @@ void EcnaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   Handle<EcalRawDataCollection> pEventHeader;
   const EcalRawDataCollection* myEventHeader = 0;
   try{
-    iEvent.getByLabel(eventHeaderProducer_, eventHeaderCollection_, pEventHeader);
+    iEvent.getByToken(eventHeaderToken_, pEventHeader);
     myEventHeader = pEventHeader.product();
   }catch (std::exception& ex ){
-    std::cerr << "Error! can't get the product " << eventHeaderCollection_.c_str() << std::endl;
+    // this should be uncached or rethrown, otherwise it will segfault in the next loop
+    std::cerr << "Error! can't get the product " << eventHeaderTag_ << std::endl;  
   }
+
   //........... Decode myEventHeader infos
   for(EcalRawDataCollection::const_iterator headerItr=myEventHeader->begin();
       headerItr != myEventHeader->end();++headerItr)
@@ -722,10 +728,11 @@ void EcnaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	  Handle<EBDigiCollection> pdigisEB;
 	  const EBDigiCollection* digisEB = 0;
 	  try{
-	    iEvent.getByLabel(digiProducer_, EBdigiCollection_, pdigisEB); 
+	    iEvent.getByToken(EBdigiToken_, pdigisEB); 
 	    digisEB = pdigisEB.product();
 	  }catch (std::exception& ex ){
-	    std::cerr << "Error! can't get the product " << EBdigiCollection_.c_str() << std::endl;
+	    // this should be uncached or rethrown, otherwise it will segfault in the next loop
+	    std::cerr << "Error! can't get the product " << EBDigiTag_ << std::endl;  
 	  }
 	  
 	  // Initialize vectors if not already done
@@ -874,10 +881,11 @@ void EcnaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	  Handle<EEDigiCollection> pdigisEE;
 	  const EEDigiCollection* digisEE = 0;
 	  try{
-	    iEvent.getByLabel(digiProducer_, EEdigiCollection_, pdigisEE); 
+	    iEvent.getByToken(EEdigiToken_, pdigisEE); 
 	    digisEE = pdigisEE.product();
 	  }catch (std::exception& ex ){
-	    std::cerr << "Error! can't get the product " << EEdigiCollection_.c_str() << std::endl;
+	    // this should be uncached or rethrown, otherwise it will segfault in the next loop
+	    std::cerr << "Error! can't get the product " << EEDigiTag_ << std::endl;  
 	  }
       
 	  // Initialize vectors if not already done

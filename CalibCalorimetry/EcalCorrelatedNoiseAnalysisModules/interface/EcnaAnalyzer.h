@@ -148,11 +148,14 @@ class EcnaAnalyzer : public edm::EDAnalyzer {
   unsigned int verbosity_;
   Int_t  nChannels_;
   Int_t  iEvent_; // should be removed when we can access class EventID
-  std::string eventHeaderProducer_;
-  std::string digiProducer_;
-  std::string eventHeaderCollection_;
-  std::string EBdigiCollection_;
-  std::string EEdigiCollection_;
+
+  edm::InputTag eventHeaderTag_;
+  edm::InputTag EBDigiTag_;
+  edm::InputTag EEDigiTag_;
+
+  edm::EDGetTokenT<edm::SortedCollection<EcalDCCHeaderBlock, edm::StrictWeakOrdering<EcalDCCHeaderBlock> > > eventHeaderToken_;
+  edm::EDGetTokenT<EBDigiCollection> EBdigiToken_;
+  edm::EDGetTokenT<EEDigiCollection> EEdigiToken_;
 
   TString  sAnalysisName_;
   TString  sNbOfSamples_;

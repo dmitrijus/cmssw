@@ -2,6 +2,8 @@
 
 #include <memory>
 #include <FWCore/Framework/interface/EDAnalyzer.h>
+#include <DataFormats/EcalDigi/interface/EcalDigiCollections.h>
+#include <DataFormats/EcalRawData/interface/EcalRawDataCollections.h>
 
 class TFile;
 class TTree;
@@ -103,14 +105,17 @@ class EcalLaserAnalyzer2: public edm::EDAnalyzer{
   TMom *Delta12;
   
   std::string  resdir_;
-  std::string  digiCollection_;
   std::string  elecfile_;
   std::string  pncorfile_;
-  std::string  digiPNCollection_;
-  std::string  digiProducer_;
-  std::string  eventHeaderCollection_;
-  std::string  eventHeaderProducer_;
-      
+
+  edm::InputTag digiTag_;
+  edm::InputTag digiPNTag_;
+  edm::InputTag eventHeaderTag_;
+  
+  edm::EDGetTokenT<edm::SortedCollection<EcalDCCHeaderBlock, edm::StrictWeakOrdering<EcalDCCHeaderBlock> > > eventHeaderToken_;
+  edm::EDGetTokenT<edm::SortedCollection<EcalPnDiodeDigi, edm::StrictWeakOrdering<EcalPnDiodeDigi> > > digiPNToken_;
+  edm::EDGetTokenT<EBDigiCollection> EBDigiToken_;
+  edm::EDGetTokenT<EEDigiCollection> EEDigiToken_;
 
   // Output file names
 

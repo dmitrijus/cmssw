@@ -428,6 +428,7 @@ private:
   int lumiBlockSpan_;
 
   edm::InputTag fedRawDataCollectionTag_;
+  edm::EDGetTokenT<FEDRawDataCollection> fedRawDataCollectionToken_;
 
   /** FED ID associated to Matacq data
    */

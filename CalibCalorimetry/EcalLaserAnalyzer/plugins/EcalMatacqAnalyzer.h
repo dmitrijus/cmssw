@@ -2,6 +2,8 @@
 
 #include <memory>
 #include <FWCore/Framework/interface/EDAnalyzer.h>
+#include <DataFormats/EcalDigi/interface/EcalDigiCollections.h>
+#include <DataFormats/EcalRawData/interface/EcalRawDataCollections.h>
 
 class TFile;
 class TTree;
@@ -53,14 +55,14 @@ class EcalMatacqAnalyzer: public edm::EDAnalyzer{
   int          _debug;
 
   std::string resdir_;
-  std::string digiCollection_;
-  std::string digiProducer_;
-  std::string eventHeaderCollection_;
-  std::string eventHeaderProducer_;
-
   std::string outfile;
   std::string sampfile;
 
+  edm::InputTag digiTag_;
+  edm::InputTag eventHeaderTag_;
+  
+  edm::EDGetTokenT<edm::SortedCollection<EcalDCCHeaderBlock, edm::StrictWeakOrdering<EcalDCCHeaderBlock> > > eventHeaderToken_;                   
+  edm::EDGetTokenT<edm::SortedCollection<EcalMatacqDigi, edm::StrictWeakOrdering<EcalMatacqDigi> > > digiToken_; 
 
   // Identify run type
 

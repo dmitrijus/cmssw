@@ -14,9 +14,15 @@
 
 EcalRecHitRecalib::EcalRecHitRecalib(const edm::ParameterSet& iConfig)
 {
-  ecalHitsProducer_ = iConfig.getParameter< std::string > ("ecalRecHitsProducer");
-  barrelHits_ = iConfig.getParameter< std::string > ("barrelHitCollection");
-  endcapHits_ = iConfig.getParameter< std::string > ("endcapHitCollection");
+
+  std::string ecalHitsProducer = iConfig.getParameter< std::string > ("ecalRecHitsProducer");
+
+  edm::InputTag barrelHitsTag(ecalHitsProducer, iConfig.getParameter<std::string>("barrelHitCollection"));
+  edm::InputTag endcapHitsTag(ecalHitsProducer, iConfig.getParameter<std::string>("endcapHitCollection"));
+
+  barrelHitsInputToken_ = consumes<EBRecHitCollection>(barrelHitsTag);
+  endcapHitsInputToken_ = consumes<EBRecHitCollection>(endcapHitsTag);
+
   RecalibBarrelHits_ = iConfig.getParameter< std::string > ("RecalibBarrelHitCollection");
   RecalibEndcapHits_ = iConfig.getParameter< std::string > ("RecalibEndcapHitCollection");
   refactor_ = iConfig.getUntrackedParameter<double> ("Refactor",(double)1);
@@ -30,7 +36,6 @@ EcalRecHitRecalib::EcalRecHitRecalib(const edm::ParameterSet& iConfig)
 
 EcalRecHitRecalib::~EcalRecHitRecalib()
 {
- 
 
 }
 
@@ -46,16 +51,16 @@ EcalRecHitRecalib::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   Handle<EERecHitCollection> endcapRecHitsHandle;
 
   const EBRecHitCollection*  EBRecHits = 0;
-  const EERecHitCollection*  EERecHits = 0; 
- 
-  iEvent.getByLabel(ecalHitsProducer_,barrelHits_,barrelRecHitsHandle);
+  const EERecHitCollection*  EERecHits = 0;
+
+  iEvent.getByToken(barrelHitsInputToken_, barrelRecHitsHandle);
   if (!barrelRecHitsHandle.isValid()) {
     LogDebug("") << "EcalREcHitMiscalib: Error! can't get product!" << std::endl;
   } else {
     EBRecHits = barrelRecHitsHandle.product(); // get a ptr to the product
   }
 
-  iEvent.getByLabel(ecalHitsProducer_,endcapHits_,endcapRecHitsHandle);
+  iEvent.getByToken(endcapHitsInputToken_, endcapRecHitsHandle);
   if (!endcapRecHitsHandle.isValid()) {
     LogDebug("") << "EcalREcHitMiscalib: Error! can't get product!" << std::endl;
   } else {

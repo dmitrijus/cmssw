@@ -90,15 +90,19 @@ phi(-1), eta(-1), event(0), color(-1), channelIteratorEE(0)
 
   resdir_                 = iConfig.getUntrackedParameter<std::string>("resDir");
 
-  digiCollection_         = iConfig.getParameter<std::string>("digiCollection");
-  digiProducer_           = iConfig.getParameter<std::string>("digiProducer");
+  eventHeaderTag_ = edm::InputTag(
+    iConfig.getParameter<std::string>("eventHeaderProducer"),
+    iConfig.getParameter<std::string>("eventHeaderCollection"));
 
-  eventHeaderCollection_  = iConfig.getParameter<std::string>("eventHeaderCollection");
-  eventHeaderProducer_    = iConfig.getParameter<std::string>("eventHeaderProducer");
+  digiTag_ = edm::InputTag(
+    iConfig.getParameter<std::string>("digiProducer"),
+    iConfig.getParameter<std::string>("digiCollection"));
 
+  eventHeaderToken_ = consumes<edm::SortedCollection<EcalDCCHeaderBlock, edm::StrictWeakOrdering<EcalDCCHeaderBlock> > >(eventHeaderTag_);
+  EBDigiToken_ = consumes<EBDigiCollection>(digiTag_);
+  EEDigiToken_ = consumes<EEDigiCollection>(digiTag_);
 
-
-  // Geometrical constants initialization 
+  // Geometrical constants initialization
 
 
   if (_ecalPart == "EB") {
@@ -235,10 +239,11 @@ void EcalABAnalyzer:: analyze( const edm::Event & e, const  edm::EventSetup& c){
   edm::Handle<EcalRawDataCollection> pDCCHeader;
   const  EcalRawDataCollection* DCCHeader=0;
   try {
-    e.getByLabel(eventHeaderProducer_,eventHeaderCollection_, pDCCHeader);
-    DCCHeader=pDCCHeader.product();
+    e.getByToken(eventHeaderToken_, pDCCHeader);
+    DCCHeader = pDCCHeader.product();
   }catch ( std::exception& ex ) {
-    std::cerr << "Error! can't get the product retrieving DCC header" << eventHeaderCollection_.c_str() <<" "<< eventHeaderProducer_.c_str() << std::endl;
+    // useless catch, should return or rethrow; will segfault on access to DCCHeader
+    std::cerr << "Error! can't get the product retrieving DCC header" << eventHeaderTag_ << std::endl;
   }
   
   //retrieving crystal data from Event
@@ -248,17 +253,19 @@ void EcalABAnalyzer:: analyze( const edm::Event & e, const  edm::EventSetup& c){
   const  EEDigiCollection* EEDigi=0;
   if (_ecalPart == "EB") {
     try {
-      e.getByLabel(digiProducer_,digiCollection_, pEBDigi); 
-      EBDigi=pEBDigi.product(); 
+      e.getByToken(EBDigiToken_, pEBDigi);
+      EBDigi = pEBDigi.product();
     }catch ( std::exception& ex ) {
-      std::cerr << "Error! can't get the product retrieving EB crystal data " << digiCollection_.c_str() << std::endl;
+      // useless catch, should return or rethrow; will segfault on access to EBDigi
+      std::cerr << "Error! can't get the product retrieving EB crystal data " << digiTag_ << std::endl;
     } 
   } else if (_ecalPart == "EE") {
     try {
-      e.getByLabel(digiProducer_,digiCollection_, pEEDigi); 
-      EEDigi=pEEDigi.product(); 
+      e.getByToken(EEDigiToken_, pEEDigi);
+      EEDigi=pEEDigi.product();
     }catch ( std::exception& ex ) {
-      std::cerr << "Error! can't get the product retrieving EE crystal data " << digiCollection_.c_str() << std::endl;
+      // useless catch, should return or rethrow; will segfault on access to EEDigi
+      std::cerr << "Error! can't get the product retrieving EE crystal data " << digiTag_ << std::endl;
     } 
   } else {
     std::cout <<" Wrong ecalPart in cfg file " << std::endl;

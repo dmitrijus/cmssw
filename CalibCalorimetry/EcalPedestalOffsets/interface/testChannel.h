@@ -62,9 +62,11 @@ class testChannel: public edm::EDAnalyzer
  
     int getHeaderSMId (const int headerId) ;
     
-    std::string m_digiCollection ; //! secondary name given to collection of digis
-    std::string m_digiProducer ;   //! name of module/plugin/producer making digis
-    std::string m_headerProducer ; //! name of module/plugin/producer making headers
+    edm::InputTag m_barrelDigiCollectionTag;
+    edm::InputTag m_headerCollectionTag;
+
+    edm::EDGetTokenT<edm::SortedCollection<EcalDCCHeaderBlock, edm::StrictWeakOrdering<EcalDCCHeaderBlock> > > m_headerCollectionToken;
+    edm::EDGetTokenT<EBDigiCollection> m_barrelDigiCollectionToken;
 
     std::string m_xmlFile ;        //! name of the xml file to be saved
 

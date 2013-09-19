@@ -36,9 +36,6 @@ using namespace edm;
 
 //! ctor
 EcalPedOffset::EcalPedOffset (const ParameterSet& paramSet) :
-  m_barrelDigiCollection (paramSet.getParameter<edm::InputTag> ("EBdigiCollection")),
-  m_endcapDigiCollection (paramSet.getParameter<edm::InputTag> ("EEdigiCollection")),
-  m_headerCollection (paramSet.getParameter<edm::InputTag> ("headerCollection")),
   m_xmlFile (paramSet.getParameter<std::string> ("xmlFile")),
   m_DACmin (paramSet.getUntrackedParameter<int> ("DACmin",0)),
   m_DACmax (paramSet.getUntrackedParameter<int> ("DACmax",256)),
@@ -57,6 +54,16 @@ EcalPedOffset::EcalPedOffset (const ParameterSet& paramSet) :
   m_minSlopeAllowed_ (paramSet.getUntrackedParameter<double> ("minSlopeAllowed",-18)),
   m_maxChi2OverNDFAllowed_ (paramSet.getUntrackedParameter<double> ("maxChi2OverNDF",5))
 {
+  m_barrelDigiCollection = paramSet.getParameter<edm::InputTag>("EBdigiCollection");
+  m_endcapDigiCollection = paramSet.getParameter<edm::InputTag>("EEdigiCollection");
+  m_headerCollection = paramSet.getParameter<edm::InputTag>("headerCollection");
+
+  m_headerCollectionToken =
+    consumes<edm::SortedCollection<EcalDCCHeaderBlock, edm::StrictWeakOrdering<EcalDCCHeaderBlock> > >(m_headerCollection);
+
+  m_barrelDigiCollectionToken = consumes<EBDigiCollection>(m_barrelDigiCollection);
+  m_endcapDigiCollectionToken = consumes<EEDigiCollection>(m_endcapDigiCollection);
+
   edm::LogInfo ("EcalPedOffset") << " reading "
     << " m_DACmin: " << m_DACmin
     << " m_DACmax: " << m_DACmax
@@ -109,7 +116,7 @@ void EcalPedOffset::analyze (Event const& event,
   // get the headers
   // (one header for each supermodule)
   edm::Handle<EcalRawDataCollection> DCCHeaders;
-  event.getByLabel(m_headerCollection, DCCHeaders);
+  event.getByToken(m_headerCollectionToken, DCCHeaders);
 
   std::map <int,int> DACvalues;
 
@@ -132,7 +139,7 @@ void EcalPedOffset::analyze (Event const& event,
   // get the barrel digis
   // (one digi for each crystal)
   Handle<EBDigiCollection> barrelDigis;
-  event.getByLabel(m_barrelDigiCollection, barrelDigis);
+  event.getByToken(m_barrelDigiCollectionToken, barrelDigis);
   if(!barrelDigis.isValid())
   {
     edm::LogError ("EcalPedOffset") << "Error! can't get the product " 

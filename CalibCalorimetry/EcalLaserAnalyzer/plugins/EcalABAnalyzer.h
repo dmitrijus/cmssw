@@ -8,6 +8,8 @@
 #include <map>
 
 #include <FWCore/Framework/interface/EDAnalyzer.h>
+#include <DataFormats/EcalDigi/interface/EcalDigiCollections.h>
+#include <DataFormats/EcalRawData/interface/EcalRawDataCollections.h>
 
 class TShapeAnalysis;
 class TAPDPulse;
@@ -82,10 +84,13 @@ class EcalABAnalyzer: public edm::EDAnalyzer{
   TMom *Delta12;
   
   std::string  resdir_;
-  std::string  digiCollection_;
-  std::string  digiProducer_;
-  std::string  eventHeaderCollection_;
-  std::string  eventHeaderProducer_;
+
+  edm::InputTag digiTag_;
+  edm::InputTag eventHeaderTag_;
+
+  edm::EDGetTokenT<edm::SortedCollection<EcalDCCHeaderBlock, edm::StrictWeakOrdering<EcalDCCHeaderBlock> > > eventHeaderToken_;                                             
+  edm::EDGetTokenT<EBDigiCollection> EBDigiToken_; 
+  edm::EDGetTokenT<EEDigiCollection> EEDigiToken_; 
   
   // Output file names
   

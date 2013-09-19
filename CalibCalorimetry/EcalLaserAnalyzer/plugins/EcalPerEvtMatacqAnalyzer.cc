@@ -55,12 +55,16 @@ EcalPerEvtMatacqAnalyzer::EcalPerEvtMatacqAnalyzer(const edm::ParameterSet& iCon
 
   resdir_                 = iConfig.getUntrackedParameter<std::string>("resDir");
 
-  digiCollection_         = iConfig.getParameter<std::string>("digiCollection");
-  digiProducer_           = iConfig.getParameter<std::string>("digiProducer");
-  
-  eventHeaderCollection_  = iConfig.getParameter<std::string>("eventHeaderCollection");
-  eventHeaderProducer_    = iConfig.getParameter<std::string>("eventHeaderProducer");
+  eventHeaderTag_ = edm::InputTag(
+    iConfig.getParameter<std::string>("eventHeaderProducer"),
+    iConfig.getParameter<std::string>("eventHeaderCollection"));
 
+  digiTag_ = edm::InputTag(
+    iConfig.getParameter<std::string>("digiProducer"),
+    iConfig.getParameter<std::string>("digiCollection"));
+
+  eventHeaderToken_ = consumes<edm::SortedCollection<EcalDCCHeaderBlock, edm::StrictWeakOrdering<EcalDCCHeaderBlock> > >(eventHeaderTag_);
+  digiToken_ = consumes<edm::SortedCollection<EcalMatacqDigi, edm::StrictWeakOrdering<EcalMatacqDigi> > >(digiTag_);
 }
 
 //========================================================================
@@ -96,11 +100,11 @@ void EcalPerEvtMatacqAnalyzer:: analyze( const edm::Event & e, const  edm::Event
   edm::Handle<EcalMatacqDigiCollection> pmatacqDigi;
   const EcalMatacqDigiCollection* matacqDigi=0;
   try {
-    e.getByLabel(digiProducer_,digiCollection_, pmatacqDigi); 
+    e.getByToken(digiToken_, pmatacqDigi);
     matacqDigi=pmatacqDigi.product();
-  }catch ( std::exception& ex ) {
-    std::cerr << "Error! can't get the product " << digiCollection_.c_str() << std::endl;
-
+  } catch ( std::exception& ex ) {
+    // @TODO a bug; should return or rethrow; next access to this variable will segfault
+    std::cerr << "Error! can't get the product " << digiTag_ << std::endl;
   }
   
   // retrieving DCC header
@@ -108,11 +112,14 @@ void EcalPerEvtMatacqAnalyzer:: analyze( const edm::Event & e, const  edm::Event
   edm::Handle<EcalRawDataCollection> pDCCHeader;
   const  EcalRawDataCollection* DCCHeader=0;
   try {
-     e.getByLabel(digiProducer_, pDCCHeader); 
-     //e.getByLabel(eventHeaderProducer_,eventHeaderCollection_, pDCCHeader);
+    e.getByToken(eventHeaderToken_, pDCCHeader);
+    // @TODO incorrect producer/collection was used.
+    //e.getByLabel(digiProducer_, pDCCHeader); <- this was used
+    //e.getByLabel(eventHeaderProducer_,eventHeaderCollection_, pDCCHeader); <- was commented out
     DCCHeader=pDCCHeader.product();
   }catch ( std::exception& ex ) {
-    std::cerr << "Error! can't get the product " << eventHeaderCollection_.c_str() << std::endl;
+    // @TODO a bug; should return or rethrow; next access to this variable will segfault
+    std::cerr << "Error! can't get the product " << eventHeaderTag_ << std::endl;
   }
 
 

@@ -52,9 +52,18 @@ _dataType(        iConfig.getUntrackedParameter< std::string >( "dataType",     
   resdir_                 = iConfig.getUntrackedParameter<std::string>("resDir");
   statusfile_             = iConfig.getUntrackedParameter<std::string>("statusFile");
 
-  eventHeaderCollection_  = iConfig.getParameter<std::string>("eventHeaderCollection");
-  eventHeaderProducer_    = iConfig.getParameter<std::string>("eventHeaderProducer");
+  eventHeaderTag_ = edm::InputTag(
+    iConfig.getParameter<std::string>("eventHeaderProducer"),
+    iConfig.getParameter<std::string>("eventHeaderCollection"));
 
+  TBEventHeaderTag_ = edm::InputTag( // @TODO collection was not used
+    iConfig.getParameter<std::string>("eventHeaderProducer"));
+
+
+  eventHeaderToken_ =
+    consumes<edm::SortedCollection<EcalDCCHeaderBlock, edm::StrictWeakOrdering<EcalDCCHeaderBlock> > >(eventHeaderTag_);
+
+  TBEventHeaderToken_ = consumes<EcalTBEventHeader>(TBEventHeaderTag_);
 }
 
 
@@ -99,10 +108,11 @@ void EcalStatusAnalyzer:: analyze( const edm::Event & e, const  edm::EventSetup&
   edm::Handle<EcalRawDataCollection> pDCCHeader;
   const  EcalRawDataCollection* DCCHeader=0;
   try {
-    e.getByLabel(eventHeaderProducer_,eventHeaderCollection_, pDCCHeader);
+    e.getByToken(eventHeaderToken_, pDCCHeader);
     DCCHeader=pDCCHeader.product();
-  }catch ( std::exception& ex ) {
-    std::cerr << "Error! can't get the product  retrieving DCC header " << eventHeaderCollection_.c_str() << std::endl;
+  } catch ( std::exception& ex ) {
+      // @TODO a bug; should return or rethrow; next access to this variable will segfault
+    std::cerr << "Error! can't get the product  retrieving DCC header " << eventHeaderTag_ << std::endl;
   }
 
   // retrieving TB event header
@@ -111,10 +121,11 @@ void EcalStatusAnalyzer:: analyze( const edm::Event & e, const  edm::EventSetup&
   const EcalTBEventHeader* evtHeader=0;
   if ( _dataType == "h4" ){
     try {
-      e.getByLabel( eventHeaderProducer_ , pEventHeader );
+      e.getByToken(TBEventHeaderToken_, pEventHeader );
       evtHeader = pEventHeader.product(); // get a ptr to the product
     } catch ( std::exception& ex ) {
-      std::cerr << "Error! can't get the product " << eventHeaderProducer_.c_str() << std::endl;
+      // @TODO a bug; should return or rethrow; next access to this variable will segfault
+      std::cerr << "Error! can't get the product " << TBEventHeaderTag_ << std::endl;
     }
     
     timeStampCur=evtHeader->begBurstTimeSec();

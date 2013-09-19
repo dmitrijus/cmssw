@@ -31,6 +31,9 @@
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+
+#include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
+
 //
 // class decleration
 //
@@ -44,10 +47,13 @@ class EcalRecHitRecalib : public edm::EDProducer {
       virtual void produce(edm::Event &, const edm::EventSetup&);
    private:
       // ----------member data ---------------------------
+    
+ // std::string barrelHits_; @deprected by the consumes migration
+ // std::string endcapHits_;
+ // std::string ecalHitsProducer_;
+ edm::EDGetTokenT<EBRecHitCollection> barrelHitsInputToken_;
+ edm::EDGetTokenT<EBRecHitCollection> endcapHitsInputToken_;
 
- std::string ecalHitsProducer_;
- std::string barrelHits_;
- std::string endcapHits_;
  std::string RecalibBarrelHits_;
  std::string RecalibEndcapHits_;
  double refactor_;

@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 # producer of rechits starting from digis
-ecalFixedAlphaBetaFitUncalibRecHit = cms.EDProducer("EcalUncalibRecHitProducer",
+ecalFixedAlphaBetaFitUncalibRecHit = cms.EDProducer("EcalUncalibRecHitProducerFixedAlphaBetaFit",
     EEdigiCollection = cms.InputTag("ecalDigis","eeDigis"),
     EBdigiCollection = cms.InputTag("ecalDigis","ebDigis"),
     EEhitCollection = cms.string("EcalUncalibRecHitsEE"),
@@ -14,5 +14,4 @@ ecalFixedAlphaBetaFitUncalibRecHit = cms.EDProducer("EcalUncalibRecHitProducer",
     alphaEB = cms.double(1.138),
     alphaEE = cms.double(1.890),
     EBhitCollection = cms.string("EcalUncalibRecHitsEB"),
-    algo = cms.string("EcalUncalibRecHitWorkerFixedAlphaBetaFit")
 )

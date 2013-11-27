@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-ecalRatioUncalibRecHit = cms.EDProducer("EcalUncalibRecHitProducer",
+ecalRatioUncalibRecHit = cms.EDProducer("EcalUncalibRecHitProducerRatio",
     EBdigiCollection = cms.InputTag("ecalDigis","ebDigis"),
     EEdigiCollection = cms.InputTag("ecalDigis","eeDigis"),
     EBhitCollection = cms.string("EcalUncalibRecHitsEB"),
@@ -15,5 +15,4 @@ ecalRatioUncalibRecHit = cms.EDProducer("EcalUncalibRecHitProducer",
     EEtimeFitLimits_Upper = cms.double(1.4),
     EBtimeConstantTerm = cms.double(.26),
     EEtimeConstantTerm = cms.double(.18),
-    algo = cms.string("EcalUncalibRecHitWorkerRatio")
 )

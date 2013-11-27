@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-ecalGlobalUncalibRecHit = cms.EDProducer("EcalUncalibRecHitProducer",
+ecalGlobalUncalibRecHit = cms.EDProducer("EcalUncalibRecHitProducerGlobal",
     EBdigiCollection = cms.InputTag("ecalDigis","ebDigis"),
     EEdigiCollection = cms.InputTag("ecalDigis","eeDigis"),
     EBhitCollection = cms.string("EcalUncalibRecHitsEB"),
@@ -73,6 +73,4 @@ ecalGlobalUncalibRecHit = cms.EDProducer("EcalUncalibRecHitProducer",
     chi2ThreshEE_ = cms.double(95.0),
     EBchi2Parameters = cms.vdouble(2.122, 0.022, 2.122, 0.022),
     EEchi2Parameters = cms.vdouble(2.122, 0.022, 2.122, 0.022),
-   
-    algo = cms.string("EcalUncalibRecHitWorkerGlobal")
 )

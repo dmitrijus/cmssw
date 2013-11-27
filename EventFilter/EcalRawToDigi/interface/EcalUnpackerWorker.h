@@ -14,7 +14,7 @@
 #include "EventFilter/EcalRawToDigi/interface/EcalUnpackerWorkerRecord.h"
 #include "EventFilter/EcalRawToDigi/interface/EcalRegionCabling.h"
 
-#include "RecoLocalCalo/EcalRecProducers/interface/EcalUncalibRecHitWorkerBaseClass.h"
+#include "RecoLocalCalo/EcalRecProducers/interface/UnpackerWorkerCompat.h"
 #include "RecoLocalCalo/EcalRecProducers/interface/EcalRecHitWorkerBaseClass.h"
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
@@ -85,7 +85,8 @@ class EcalUnpackerWorker : public EcalUnpackerWorkerBase {
 
   mutable edm::ESHandle<EcalRegionCabling> cabling;
 
-  EcalUncalibRecHitWorkerBaseClass * UncalibWorker_;
+  EcalUncalibRecHitProducerBase * UncalibWorker_;
+
   EcalRecHitWorkerBaseClass * CalibWorker_;
 
  public:

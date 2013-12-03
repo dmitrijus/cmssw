@@ -85,7 +85,7 @@ class EcalUnpackerWorker : public EcalUnpackerWorkerBase {
 
   mutable edm::ESHandle<EcalRegionCabling> cabling;
 
-  EcalUncalibRecHitProducerBase * UncalibWorker_;
+  EcalUncalibRecHitWorkerBase * UncalibWorker_;
 
   EcalRecHitWorkerBaseClass * CalibWorker_;
 

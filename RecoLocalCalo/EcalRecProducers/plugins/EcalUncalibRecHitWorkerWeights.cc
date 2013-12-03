@@ -23,22 +23,19 @@
 #include "SimCalorimetry/EcalSimAlgos/interface/EBShape.h"
 #include "SimCalorimetry/EcalSimAlgos/interface/EEShape.h"
 
-#include "RecoLocalCalo/EcalRecProducers/plugins/EcalUncalibRecHitProducerBase.h"
+#include "RecoLocalCalo/EcalRecProducers/interface/UnpackerWorkerCompat.h"
 #include "RecoLocalCalo/EcalRecAlgos/interface/EcalUncalibRecHitRecWeightsAlgo.h"
 
-class EcalUncalibRecHitProducerWeights : public EcalUncalibRecHitProducerBase {
-
+class EcalUncalibRecHitWorkerWeights : public EcalUncalibRecHitWorkerBase {
  public:
-  EcalUncalibRecHitProducerWeights(const edm::ParameterSet &ps)
-      : EcalUncalibRecHitProducerBase(ps) {}
-  ;
-  virtual ~EcalUncalibRecHitProducerWeights() {}
-  ;
+  EcalUncalibRecHitWorkerWeights(const edm::ParameterSet &ps)
+      : EcalUncalibRecHitWorkerBase(ps) {}
+  virtual ~EcalUncalibRecHitWorkerWeights() {}
 
-  void set(const edm::EventSetup &es);
-  bool run(const edm::Event &evt,
-           const EcalDigiCollection::const_iterator &digi,
-           EcalUncalibratedRecHitCollection &result);
+  virtual void set(const edm::EventSetup &es);
+  virtual bool run(const edm::Event &evt,
+                   const EcalDigiCollection::const_iterator &digi,
+                   EcalUncalibratedRecHitCollection &result);
 
  protected:
 
@@ -60,17 +57,16 @@ class EcalUncalibRecHitProducerWeights : public EcalUncalibRecHitProducerBase {
   const EEShape testbeamEEShape;  // used in the chi2
   const EBShape testbeamEBShape;  // can be replaced by simple shape arrays of
                                   // floats in the future (kostas)
-
 };
 
-void EcalUncalibRecHitProducerWeights::set(const edm::EventSetup &es) {
+void EcalUncalibRecHitWorkerWeights::set(const edm::EventSetup &es) {
   es.get<EcalGainRatiosRcd>().get(gains);
   es.get<EcalPedestalsRcd>().get(peds);
   es.get<EcalWeightXtalGroupsRcd>().get(grps);
   es.get<EcalTBWeightsRcd>().get(wgts);
 }
 
-bool EcalUncalibRecHitProducerWeights::run(
+bool EcalUncalibRecHitWorkerWeights::run(
     const edm::Event &evt, const EcalDigiCollection::const_iterator &itdg,
     EcalUncalibratedRecHitCollection &result) {
   DetId detid(itdg->id());
@@ -150,10 +146,15 @@ bool EcalUncalibRecHitProducerWeights::run(
 }
 
 #include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(EcalUncalibRecHitProducerWeights);
+DEFINE_EDM_PLUGIN(EcalUncalibRecHitWorkerFactory,
+                  EcalUncalibRecHitWorkerWeights,
+                  "EcalUncalibRecHitWorkerWeights");
+typedef EcalUncalibRecHitWorkerWeights EcalUncalibRecHitWorkerWeightsOld;
+DEFINE_EDM_PLUGIN(EcalUncalibRecHitWorkerFactory,
+                  EcalUncalibRecHitWorkerWeightsOld,
+                  "EcalUncalibRecHitWorkerWeightsOld");
 
-#include "RecoLocalCalo/EcalRecProducers/interface/UnpackerWorkerCompat.h"
-typedef EcalUncalibRecHitProducerWeights EcalUncalibRecHitWorkerWeightsCompat;
-typedef EcalUncalibRecHitProducerWeights EcalUncalibRecHitWorkerWeightsCompatOld;
-DEFINE_EDM_PLUGIN(EcalUncalibRecHitWorkerFactory, EcalUncalibRecHitWorkerWeightsCompat, "EcalUncalibRecHitWorkerWeights");
-DEFINE_EDM_PLUGIN(EcalUncalibRecHitWorkerFactory, EcalUncalibRecHitWorkerWeightsCompatOld, "EcalUncalibRecHitWorkerWeightsOld");
+#include "RecoLocalCalo/EcalRecProducers/plugins/EcalUncalibRecHitWorkerAdapter.h"
+typedef EcalUncalibRecHitWorkerAdapter<EcalUncalibRecHitWorkerWeights>
+    EcalUncalibRecHitProducerWeights;
+DEFINE_FWK_MODULE(EcalUncalibRecHitProducerWeights);

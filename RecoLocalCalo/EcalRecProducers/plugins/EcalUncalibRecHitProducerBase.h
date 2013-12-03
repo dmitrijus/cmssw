@@ -10,12 +10,10 @@
 #include "DataFormats/EcalDigi/interface/EcalDigiCollections.h"
 #include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
 
-
 class EBDigiCollection;
 class EEDigiCollection;
 
 class EcalUncalibRecHitProducerBase : public edm::EDProducer {
-
  public:
   explicit EcalUncalibRecHitProducerBase(const edm::ParameterSet& ps);
   ~EcalUncalibRecHitProducerBase();
@@ -24,8 +22,8 @@ class EcalUncalibRecHitProducerBase : public edm::EDProducer {
 
   /* worker interface */
   virtual bool run(const edm::Event& evt,
-           const EcalDigiCollection::const_iterator& digi,
-           EcalUncalibratedRecHitCollection& result) = 0;
+                   const EcalDigiCollection::const_iterator& digi,
+                   EcalUncalibratedRecHitCollection& result) = 0;
 
   virtual void set(const edm::EventSetup& es) = 0;
 

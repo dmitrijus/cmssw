@@ -1,9 +1,4 @@
-/**
- *  Produce ECAL uncalibrated rechits from dataframes.
- *
- *  \author G. Franzoni, E. Di Marco
- *
- */
+#include <cmath>
 
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
@@ -16,28 +11,7 @@
 #include "RecoLocalCalo/EcalRecProducers/plugins/EcalUncalibRecHitProducerBase.h"
 #include "RecoLocalCalo/EcalRecAlgos/interface/EcalUncalibRecHitMaxSampleAlgo.h"
 
-#include <cmath>
-#include <iomanip>
-#include <iostream>
-#include <vector>
-
-class EcalUncalibRecHitProducerMaxSample
-    : public EcalUncalibRecHitProducerBase {
-
- public:
-  EcalUncalibRecHitProducerMaxSample(const edm::ParameterSet &ps);
-  virtual ~EcalUncalibRecHitProducerMaxSample() {}
-  ;
-
-  virtual void set(const edm::EventSetup &es);
-  virtual bool run(const edm::Event &evt,
-                   const EcalDigiCollection::const_iterator &digi,
-                   EcalUncalibratedRecHitCollection &result);
-
- private:
-  EcalUncalibRecHitMaxSampleAlgo<EBDataFrame> ebAlgo_;
-  EcalUncalibRecHitMaxSampleAlgo<EEDataFrame> eeAlgo_;
-};
+#include "RecoLocalCalo/EcalRecProducers/plugins/EcalUncalibRecHitProducerMaxSample.h"
 
 EcalUncalibRecHitProducerMaxSample::EcalUncalibRecHitProducerMaxSample(const edm::ParameterSet &ps)
     : EcalUncalibRecHitProducerBase(ps) {}

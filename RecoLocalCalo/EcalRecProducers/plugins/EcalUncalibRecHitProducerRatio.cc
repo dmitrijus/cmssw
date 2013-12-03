@@ -1,10 +1,3 @@
-/**
-  *  Template used to compute amplitude, pedestal, time jitter, chi2 of a pulse
-  *  using a weights method.
-  *
-  *  \author A. Ledovskoy (Design) - M. Balazs (Implementation)
-  */
-
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/Event.h"
@@ -19,47 +12,8 @@
 #include "CondFormats/DataRecord/interface/EcalGainRatiosRcd.h"
 #include "CondFormats/DataRecord/interface/EcalPedestalsRcd.h"
 
-#include "RecoLocalCalo/EcalRecProducers/plugins/EcalUncalibRecHitProducerBase.h"
 #include "RecoLocalCalo/EcalRecAlgos/interface/EcalUncalibRecHitRatioMethodAlgo.h"
-
-class EcalUncalibRecHitProducerRatio : public EcalUncalibRecHitProducerBase {
-
- public:
-  EcalUncalibRecHitProducerRatio(const edm::ParameterSet&);
-  virtual ~EcalUncalibRecHitProducerRatio() {};
-
-  virtual void set(const edm::EventSetup& es);
-  virtual bool run(const edm::Event& evt,
-                   const EcalDigiCollection::const_iterator& digi,
-                   EcalUncalibratedRecHitCollection& result);
-
- protected:
-
-  // determie which of the samples must actually be used by ECAL local reco
-  edm::ESHandle<EcalSampleMask> sampleMaskHand_;
-
-  edm::ESHandle<EcalPedestals> peds;
-  edm::ESHandle<EcalGainRatios> gains;
-
-  double pedVec[3];
-  double pedRMSVec[3];
-  double gainRatios[3];
-
-  std::vector<double> EBtimeFitParameters_;
-  std::vector<double> EEtimeFitParameters_;
-
-  std::vector<double> EBamplitudeFitParameters_;
-  std::vector<double> EEamplitudeFitParameters_;
-
-  std::pair<double, double> EBtimeFitLimits_;
-  std::pair<double, double> EEtimeFitLimits_;
-
-  double EBtimeConstantTerm_;
-  double EEtimeConstantTerm_;
-
-  EcalUncalibRecHitRatioMethodAlgo<EBDataFrame> uncalibMaker_barrel_;
-  EcalUncalibRecHitRatioMethodAlgo<EEDataFrame> uncalibMaker_endcap_;
-};
+#include "RecoLocalCalo/EcalRecProducers/plugins/EcalUncalibRecHitProducerRatio.h"
 
 EcalUncalibRecHitProducerRatio::EcalUncalibRecHitProducerRatio(
     const edm::ParameterSet& ps)
@@ -83,6 +37,8 @@ EcalUncalibRecHitProducerRatio::EcalUncalibRecHitProducerRatio(
   EBtimeConstantTerm_ = ps.getParameter<double>("EBtimeConstantTerm");
   EEtimeConstantTerm_ = ps.getParameter<double>("EEtimeConstantTerm");
 }
+
+EcalUncalibRecHitProducerRatio::~EcalUncalibRecHitProducerRatio() {}
 
 void EcalUncalibRecHitProducerRatio::set(const edm::EventSetup& es) {
 

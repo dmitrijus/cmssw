@@ -10,9 +10,6 @@
 #include "DataFormats/EcalDigi/interface/EcalDigiCollections.h"
 #include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
 
-class EBDigiCollection;
-class EEDigiCollection;
-
 class EcalUncalibRecHitProducerBase : public edm::EDProducer {
  public:
   explicit EcalUncalibRecHitProducerBase(const edm::ParameterSet& ps);

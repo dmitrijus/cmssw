@@ -139,7 +139,7 @@ public:
   // Called in assignHit to check if the energy should be added to
   // calotower, and how to flag the channel
   unsigned int hcalChanStatusForCaloTower(const CaloRecHit* hit);
-  unsigned int ecalChanStatusForCaloTower(const CaloRecHit* hit);
+  unsigned int ecalChanStatusForCaloTower(const EcalRecHit* hit);
 
   // Channel flagging is based on acceptable severity levels specified in the
   // configuration file. These methods are used to pass the values read in
@@ -221,7 +221,8 @@ private:
  };
 
   /// adds a single hit to the tower
-  void assignHit(const CaloRecHit * recHit);
+  void assignHit(const EcalRecHit* recHit);
+  void assignHit(const CaloRecHit* recHit);
 
   void rescale(const CaloTower * ct);
 

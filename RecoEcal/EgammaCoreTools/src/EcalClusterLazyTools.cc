@@ -140,7 +140,20 @@ void EcalClusterLazyTools::getESRecHits( const edm::Event &ev, const edm::InputT
           EcalRecHitCollection::const_iterator it;
           for (it = pESRecHits->begin(); it != pESRecHits->end(); ++it) {
             // remove bad ES rechits
-            if (it->recoFlag()==1 || it->recoFlag()==14 || (it->recoFlag()<=10 && it->recoFlag()>=5)) continue;
+			std::vector<int> badf = {
+			  EcalRecHit::ESFlags::kESDead, // 1
+			  EcalRecHit::ESFlags::kESTwoGoodRatios,
+			  EcalRecHit::ESFlags::kESBadRatioFor12, // 5
+			  EcalRecHit::ESFlags::kESBadRatioFor23Upper,
+			  EcalRecHit::ESFlags::kESBadRatioFor23Lower,
+			  EcalRecHit::ESFlags::kESTS1Largest,
+			  EcalRecHit::ESFlags::kESTS3Largest,
+			  EcalRecHit::ESFlags::kESTS3Negative, // 10
+			  EcalRecHit::ESFlags::kESTS13Sigmas, // 14
+			};
+			
+			if (it->checkFlags(badf)) continue;
+
             //Make the map of DetID, EcalRecHit pairs
             rechits_map_.insert(std::make_pair(it->id(), *it));
           }

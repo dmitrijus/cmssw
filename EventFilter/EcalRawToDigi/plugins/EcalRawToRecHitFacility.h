@@ -38,7 +38,6 @@
 #include "EventFilter/EcalRawToDigi/interface/EcalRawToRecHitLazyUnpacker.h"
 #include "EventFilter/EcalRawToDigi/interface/EcalRegionCabling.h"
 #include "EventFilter/EcalRawToDigi/interface/EcalRegionCablingRecord.h"
-#include "EventFilter/EcalRawToDigi/interface/EcalUnpackerWorker.h"
 #include "EventFilter/EcalRawToDigi/interface/EcalUnpackerWorkerRecord.h"
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"

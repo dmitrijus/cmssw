@@ -508,6 +508,10 @@ DQMStore::initializeFrom(const edm::ParameterSet& pset) {
   if (enableMultiThread_)
     std::cout << "DQMStore: MultiThread option is enabled\n";
 
+  LSbasedMode_ = pset.getUntrackedParameter<bool>("LSbasedMode", false);
+  if (LSbasedMode_)
+    std::cout << "DQMStore: LSbasedMode option is enabled\n";
+
   std::string ref = pset.getUntrackedParameter<std::string>("referenceFileName", "");
   if (! ref.empty())
   {
@@ -767,6 +771,10 @@ DQMStore::book(const std::string &dir, const std::string &name,
       me->data_.flags |= DQMNet::DQM_PROP_HAS_REFERENCE;
       me->reference_ = refme->object_;
     }
+
+    // Make the histogram a LS-based histogram if needed (online)
+    if(LSbasedMode_ == true)
+      me->setLumiFlag();
 
     // Return the monitor element.
     return me;

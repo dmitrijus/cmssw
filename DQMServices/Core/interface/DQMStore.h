@@ -677,6 +677,7 @@ class DQMStore
   double                        scaleFlag_;
   bool                          collateHistograms_;
   bool                          enableMultiThread_;
+  bool                          LSbasedMode_;
   std::string                   readSelectedDirectory_;
   uint32_t                      run_;
   uint32_t                      streamId_;

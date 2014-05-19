@@ -5,5 +5,6 @@ DQMStore = cms.Service("DQMStore",
     verbose = cms.untracked.int32(0),
     verboseQT = cms.untracked.int32(0),
     collateHistograms = cms.untracked.bool(False),
-    enableMultiThread = cms.untracked.bool(False)
+    enableMultiThread = cms.untracked.bool(False),
+    LSbasedMode = cms.untracked.bool(False)
 )

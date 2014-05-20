@@ -260,12 +260,14 @@ filterUnitFilePrefix(const std::string &fileBaseName, const std::string &produce
   return fileprefix;
 }
 
+/*
 static std::string
 filterUnitFileName(const std::string &fileBaseName, const std::string &producer, int run, int lumi, DQMFileSaver::FileFormat fileFormat)
 {
   std::string filename = filterUnitFilePrefix(fileBaseName, producer, run, lumi) + dataFileExtension(fileFormat);
   return filename;
 }
+*/
 
 void
 DQMFileSaver::saveJson(int run, int lumi, const std::string& fn, const std::string& data_fn) {
@@ -287,7 +289,11 @@ DQMFileSaver::saveJson(int run, int lumi, const std::string& fn, const std::stri
   pt.put("definition", "/non-existant/");
   pt.put("source", "--hostname--");
   
-  // TODO(diguida): write to a temporary file, then rename it.
+  char tmpFileName[64];
+  sprintf(tmpFileName, "DQMFU_%05d.jsn", getpid());
+  // Write to a temporary file, then rename it.
+  write_json(tmpFileName, pt);
+  rename(tmpFileName , fn.c_str());
 }
 
 void
@@ -306,7 +312,9 @@ DQMFileSaver::saveForFilterUnitPB(int run, int lumi)
 void
 DQMFileSaver::saveForFilterUnit(const std::string& rewrite, int run, int lumi)
 {
-  std::string filename = filterUnitFileName(fileBaseName_, producer_, run, lumi, ROOT);
+  std::string filePrefix = filterUnitFilePrefix(fileBaseName_, producer_, run, lumi);
+  std::string filename = filePrefix + dataFileExtension(ROOT);
+  std::string filename_json = filePrefix + ".jsn";
 
   // Save the file with the full directory tree,
   // modifying it according to @a rewrite,
@@ -321,6 +329,7 @@ DQMFileSaver::saveForFilterUnit(const std::string& rewrite, int run, int lumi)
              (DQMStore::SaveReferenceTag) saveReference_,
              saveReferenceQMin_,
              fileUpdate_);
+  saveJson(run, lumi, filename_json, filename);
 }
 
 void

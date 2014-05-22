@@ -388,6 +388,7 @@ void DQMStore::mergeAndResetMEsLuminositySummaryCache(uint32_t run,
   MonitorElement proto(&null_str, null_str, run, streamId, moduleId);
   std::set<MonitorElement>::const_iterator e = data_.end();
   std::set<MonitorElement>::const_iterator i = data_.lower_bound(proto);
+
   while (i != e) {
     if (i->data_.run != run
         || i->data_.streamId != streamId
@@ -408,9 +409,16 @@ void DQMStore::mergeAndResetMEsLuminositySummaryCache(uint32_t run,
     std::lock_guard<std::mutex> guard(book_mutex_);
     std::set<MonitorElement>::const_iterator me = data_.find(global_me);
     if (me != data_.end()) {
-      if (verbose_ > 1)
-        std::cout << "Found global Object, using it --> ";
-      me->getTH1()->Add(i->getTH1());
+      if(LSbasedMode_ == true) {
+	const_cast<MonitorElement*>(&*me)->Reset();
+	if (verbose_ > 1)
+	  std::cout << "Found global Object: Resetting it";
+      }
+      else {
+	me->getTH1()->Add(i->getTH1());
+	if (verbose_ > 1)
+	  std::cout << "Found global Object: Using it";
+      }
     } else {
       if (verbose_ > 1)
         std::cout << "No global Object found. ";
@@ -446,6 +454,9 @@ DQMStore::DQMStore(const edm::ParameterSet &pset, edm::ActivityRegistry& ar)
   initializeFrom(pset);
   if(pset.getUntrackedParameter<bool>("forceResetOnBeginRun",false)) {
     ar.watchPostSourceRun(this,&DQMStore::forceReset);
+  }
+  if(pset.getUntrackedParameter<bool>("forceResetOnBeginLumi",false)) {
+    ar.watchPostSourceLumi(this,&DQMStore::forceReset);
   }
   ar.preallocateSignal_.connect([this](edm::service::SystemBounds const& iBounds) {
       if(iBounds.maxNumberOfStreams() > 1 ) {

@@ -2376,7 +2376,7 @@ void DQMStore::savePB(const std::string &filename,
         continue;
 
       if (verbose_ > 1)
-	std::cout << "DQMStore::save: saving monitor element '"
+	std::cout << "DQMStore::savePB: saving monitor element '"
 		  << *mi->data_.dirname << "/" << mi->data_.objname << "'\n";
 
       nme++;
@@ -2387,8 +2387,8 @@ void DQMStore::savePB(const std::string &filename,
       me->set_size(buffer.Length());
       me->set_streamed_histo((const void*)buffer.Buffer(),
                              buffer.Length());
-      delete mi->object_;
-      const_cast<MonitorElement*>(&*mi)->object_ = 0;
+      //delete mi->object_;
+      const_cast<MonitorElement*>(&*mi)->Reset();
     }
   }
   int filedescriptor = ::open(filename.c_str(),
@@ -2404,7 +2404,7 @@ void DQMStore::savePB(const std::string &filename,
 
   // Maybe make some noise.
   if (verbose_)
-    std::cout << "DQMStore::save: successfully wrote " << nme
+    std::cout << "DQMStore::savePB: successfully wrote " << nme
               << " objects from path '" << path
 	      << "' into DQM file '" << filename << "'\n";
 }

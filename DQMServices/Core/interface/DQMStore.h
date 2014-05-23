@@ -233,21 +233,21 @@ class DQMStore
     std::lock_guard<std::mutex> guard(book_mutex_);
     /* If enableMultiThread is not enabled we do not set run_,
        streamId_ and moduleId_ to 0, since we rely on their default
-       initialization in DQMSTore constructor. */
-    uint32_t oldRun=0,oldStreamId=0,oldModuleId=0;
+       initialization in DQMStore constructor. */
     if (enableMultiThread_) {
-      oldRun = run_;
       run_ = run;
-      oldStreamId = streamId_;
       streamId_ = streamId;
-      oldModuleId = moduleId_;
       moduleId_ = moduleId;
     }
     f(*ibooker_);
+
+    /* Initialize to 0 the run_, streamId_ and moduleId_ variables
+       in case we run in mixed conditions with DQMEDAnalyzers and
+       legacy modules */
     if (enableMultiThread_) {
-      run_ = oldRun;
-      streamId_ = oldStreamId;
-      moduleId_ = oldModuleId;
+      run_ = 0;
+      streamId_ = 0;
+      moduleId_ = 0;
     }
   }
   // Signature needed in the harvesting where the booking is done

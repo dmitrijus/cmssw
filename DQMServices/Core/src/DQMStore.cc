@@ -2395,7 +2395,7 @@ void DQMStore::savePB(const std::string &filename,
         continue;
 
       if (verbose_ > 1)
-	std::cout << "DQMStore::save: saving monitor element '"
+	std::cout << "DQMStore::savePB: saving monitor element '"
 		  << *mi->data_.dirname << "/" << mi->data_.objname << "'\n";
 
       nme++;
@@ -2422,7 +2422,7 @@ void DQMStore::savePB(const std::string &filename,
 
   // Maybe make some noise.
   if (verbose_)
-    std::cout << "DQMStore::save: successfully wrote " << nme
+    std::cout << "DQMStore::savePB: successfully wrote " << nme
               << " objects from path '" << path
 	      << "' into DQM file '" << filename << "'\n";
 }

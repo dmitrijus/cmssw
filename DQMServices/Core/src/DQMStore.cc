@@ -439,6 +439,8 @@ DQMStore::DQMStore(const edm::ParameterSet &pset, edm::ActivityRegistry& ar)
     reset_ (false),
     collateHistograms_ (false),
     enableMultiThread_(false),
+    LSbasedMode_(false),
+    forceResetOnBeginLumi_(false),
     readSelectedDirectory_ (""),
     run_(0),
     streamId_(0),
@@ -453,18 +455,18 @@ DQMStore::DQMStore(const edm::ParameterSet &pset, edm::ActivityRegistry& ar)
     igetter_ = new DQMStore::IGetter(this);
   initializeFrom(pset);
 
-  if(pset.getUntrackedParameter<bool>("forceResetOnBeginRun",false) || LSbasedMode_ == true) {
+  if(pset.getUntrackedParameter<bool>("forceResetOnBeginRun",false)) {
     ar.watchPostSourceRun(this,&DQMStore::forceReset);
-  }
-  if(pset.getUntrackedParameter<bool>("forceResetOnBeginLumi",false)) {
-    ar.watchPostSourceLumi(this,&DQMStore::forceReset);
   }
   ar.preallocateSignal_.connect([this](edm::service::SystemBounds const& iBounds) {
       if(iBounds.maxNumberOfStreams() > 1 ) {
 	enableMultiThread_ = true;
       }
     });
-
+  if(pset.getUntrackedParameter<bool>("forceResetOnBeginLumi",false) && enableMultiThread_ == false) {
+    forceResetOnBeginLumi_ = true;
+    ar.watchPostSourceLumi(this,&DQMStore::forceReset);
+  }
 }
 
 DQMStore::DQMStore(const edm::ParameterSet &pset)
@@ -2007,6 +2009,8 @@ DQMStore::forceReset(void)
   MEMap::iterator me = data_.end();
   for ( ; mi != me; ++mi)
   {
+    if (forceResetOnBeginLumi_ && ((*mi).getLumiFlag() == false))
+      continue;
     MonitorElement &me = const_cast<MonitorElement &>(*mi);
     me.Reset();
     me.resetUpdate();

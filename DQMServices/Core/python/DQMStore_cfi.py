@@ -7,8 +7,8 @@ DQMStore = cms.Service("DQMStore",
     collateHistograms = cms.untracked.bool(False),
     enableMultiThread = cms.untracked.bool(False),
     #the LSbasedMode flag is needed for the online. All the
-    #MEs are flagged to be LS based. If true, it forces the
-    #forceResetOnBeginLumi flag to be true.
+    #MEs are flagged to be LS based.
     LSbasedMode = cms.untracked.bool(False),
+    #this is bound to the enableMultiThread flag.
     forceResetOnBeginLumi = cms.untracked.bool(False)
 )

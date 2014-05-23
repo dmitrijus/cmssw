@@ -613,7 +613,7 @@ class DQMStore
 
   // ---------------- Miscellaneous -----------------------------
   void        initializeFrom(const edm::ParameterSet&);
-  void                          reset(void);
+  void        reset(void);
   void        forceReset(void);
 
   bool        extract(TObject *obj, const std::string &dir, bool overwrite);
@@ -678,6 +678,7 @@ class DQMStore
   bool                          collateHistograms_;
   bool                          enableMultiThread_;
   bool                          LSbasedMode_;
+  bool                          forceResetOnBeginLumi_;
   std::string                   readSelectedDirectory_;
   uint32_t                      run_;
   uint32_t                      streamId_;

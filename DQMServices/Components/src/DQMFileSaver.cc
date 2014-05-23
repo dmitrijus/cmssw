@@ -359,7 +359,7 @@ DQMFileSaver::DQMFileSaver(const edm::ParameterSet &ps)
     filterName_(""),
     version_ (1),
     runIsComplete_ (false),
-    enableMultiThread_(ps.getUntrackedParameter<bool>("enableMultiThread", false)),
+    enableMultiThread_ (false),
     saveByLumiSection_ (-1),
     saveByEvent_ (-1),
     saveByMinute_ (-1),
@@ -381,6 +381,9 @@ DQMFileSaver::DQMFileSaver(const edm::ParameterSet &ps)
     nevent_ (0),
     numKeepSavedFiles_ (5)
 {
+  // Determine if we are running multithreading asking to the DQMStore
+  enableMultiThread_ = dbe_->enableMultiThread_;
+
   // Determine the file saving convention, and adjust defaults accordingly.
   std::string convention = ps.getUntrackedParameter<std::string>("convention", "Offline");
   if (convention == "Offline")

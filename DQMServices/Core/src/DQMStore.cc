@@ -452,7 +452,8 @@ DQMStore::DQMStore(const edm::ParameterSet &pset, edm::ActivityRegistry& ar)
   if (!igetter_)
     igetter_ = new DQMStore::IGetter(this);
   initializeFrom(pset);
-  if(pset.getUntrackedParameter<bool>("forceResetOnBeginRun",false)) {
+
+  if(pset.getUntrackedParameter<bool>("forceResetOnBeginRun",false) || LSbasedMode_ == true) {
     ar.watchPostSourceRun(this,&DQMStore::forceReset);
   }
   if(pset.getUntrackedParameter<bool>("forceResetOnBeginLumi",false)) {

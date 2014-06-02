@@ -519,7 +519,8 @@ class DQMStore
   //-------------------------------------------------------------------------
   // ---------------------- public I/O --------------------------------------
   void                          savePB(const std::string &filename,
-                                       const std::string &path = "");
+                                       const std::string &path = "",
+				       const bool resetMEsAfterWriting = false);
   void                          save(const std::string &filename,
                                      const std::string &path = "",
                                      const std::string &pattern = "",
@@ -527,7 +528,8 @@ class DQMStore
                                      const uint32_t run = 0,
                                      SaveReferenceTag ref = SaveWithReference,
                                      int minStatus = dqm::qstatus::STATUS_OK,
-                                     const std::string &fileupdate = "RECREATE");
+                                     const std::string &fileupdate = "RECREATE",
+				     const bool resetMEsAfterWriting = false);
   bool                          open(const std::string &filename,
                                      bool overwrite = false,
                                      const std::string &path ="",
@@ -677,7 +679,6 @@ class DQMStore
   double                        scaleFlag_;
   bool                          collateHistograms_;
   bool                          enableMultiThread_;
-  bool                          LSbasedMode_;
   bool                          forceResetOnBeginLumi_;
   std::string                   readSelectedDirectory_;
   uint32_t                      run_;

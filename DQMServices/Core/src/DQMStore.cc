@@ -409,16 +409,9 @@ void DQMStore::mergeAndResetMEsLuminositySummaryCache(uint32_t run,
     std::lock_guard<std::mutex> guard(book_mutex_);
     std::set<MonitorElement>::const_iterator me = data_.find(global_me);
     if (me != data_.end()) {
-      if(LSbasedMode_ == true) {
-	const_cast<MonitorElement*>(&*me)->Reset();
-	if (verbose_ > 1)
-	  std::cout << "Found global Object: Resetting it";
-      }
-      else {
-	me->getTH1()->Add(i->getTH1());
-	if (verbose_ > 1)
-	  std::cout << "Found global Object: Using it";
-      }
+      if (verbose_ > 1)
+	std::cout << "Found global Object, using it --> ";
+      me->getTH1()->Add(i->getTH1());
     } else {
       if (verbose_ > 1)
         std::cout << "No global Object found. ";
@@ -439,7 +432,6 @@ DQMStore::DQMStore(const edm::ParameterSet &pset, edm::ActivityRegistry& ar)
     reset_ (false),
     collateHistograms_ (false),
     enableMultiThread_(false),
-    LSbasedMode_(false),
     forceResetOnBeginLumi_(false),
     readSelectedDirectory_ (""),
     run_(0),
@@ -521,10 +513,6 @@ DQMStore::initializeFrom(const edm::ParameterSet& pset) {
   enableMultiThread_ = pset.getUntrackedParameter<bool>("enableMultiThread", false);
   if (enableMultiThread_)
     std::cout << "DQMStore: MultiThread option is enabled\n";
-
-  LSbasedMode_ = pset.getUntrackedParameter<bool>("LSbasedMode", false);
-  if (LSbasedMode_)
-    std::cout << "DQMStore: LSbasedMode option is enabled\n";
 
   std::string ref = pset.getUntrackedParameter<std::string>("referenceFileName", "");
   if (! ref.empty())
@@ -785,11 +773,6 @@ DQMStore::book(const std::string &dir, const std::string &name,
       me->data_.flags |= DQMNet::DQM_PROP_HAS_REFERENCE;
       me->reference_ = refme->object_;
     }
-
-    // Make the histogram a LS-based histogram if needed (online)
-    if(LSbasedMode_ == true)
-      me->setLumiFlag();
-
     // Return the monitor element.
     return me;
   }
@@ -2363,7 +2346,8 @@ DQMStore::cdInto(const std::string &path) const
 }
 
 void DQMStore::savePB(const std::string &filename,
-                      const std::string &path /* = "" */)
+                      const std::string &path /* = "" */,
+		      const bool resetMEsAfterWriting /* = false */)
 {
   using google::protobuf::io::FileOutputStream;
   using google::protobuf::io::GzipOutputStream;
@@ -2411,7 +2395,10 @@ void DQMStore::savePB(const std::string &filename,
       me->set_size(buffer.Length());
       me->set_streamed_histo((const void*)buffer.Buffer(),
                              buffer.Length());
-      const_cast<MonitorElement*>(&*mi)->Reset();
+
+      //reset the ME just written to make it available for the next LS (online)
+      if(resetMEsAfterWriting)
+	const_cast<MonitorElement*>(&*mi)->Reset();
     }
   }
   int filedescriptor = ::open(filename.c_str(),
@@ -2445,7 +2432,8 @@ DQMStore::save(const std::string &filename,
                const uint32_t run /* = 0 */,
                SaveReferenceTag ref /* = SaveWithReference */,
                int minStatus /* = dqm::qstatus::STATUS_OK */,
-               const std::string &fileupdate /* = RECREATE */)
+               const std::string &fileupdate /* = RECREATE */,
+	       const bool resetMEsAfterWriting /* = false */)
 {
   std::set<std::string>::iterator di, de;
   MEMap::iterator mi, me = data_.end();
@@ -2505,24 +2493,30 @@ DQMStore::save(const std::string &filename,
     for ( ; mi != me && isSubdirectory(*di, *mi->data_.dirname); ++mi)
     {
       if (verbose_ > 1)
-        std::cout << "Run: " << (*mi).run()
+        std::cout << "DQMStore::save: Run: " << (*mi).run()
                   << " Lumi: " << (*mi).lumi()
                   << " LumiFlag: " << (*mi).getLumiFlag()
                   << " streamId: " << (*mi).streamId()
                   << " moduleId: " << (*mi).moduleId()
-                  << " fullpathname: " << (*mi).getPathname() << std::endl;
+                  << " fullpathname: " << (*mi).getFullname() << std::endl;
       // Skip if it isn't a direct child.
-      if (*di != *mi->data_.dirname)
+      if (*di != *mi->data_.dirname) {
+	if (verbose_ > 1)
+	  std::cout << "DQMStore::save: isn't a direct child. Skipping" << std::endl;
         continue;
-
+      }
+      
       // Keep backward compatibility with the old way of
       // booking/handlind MonitorElements into the DQMStore. If run is
       // 0 it means that a booking happened w/ the old non-threadsafe
       // style, and we have to ignore the streamId and moduleId as a
       // consequence.
 
-      if (run != 0 && (mi->data_.streamId !=0 || mi->data_.moduleId !=0))
+      if (run != 0 && (mi->data_.streamId !=0 || mi->data_.moduleId !=0)) {
+	if (verbose_ > 1)
+	  std::cout << "DQMStore::save: non threadsafe module. Skipping" << std::endl;
         continue;
+      }
 
       // Handle reference histograms, with three distinct cases:
       // 1) Skip all references entirely on saving.
@@ -2605,6 +2599,10 @@ DQMStore::save(const std::string &filename,
       // Save tag if any
       if (mi->data_.flags & DQMNet::DQM_PROP_TAGGED)
         TObjString(mi->tagLabelString().c_str()).Write();
+
+      //reset the ME just written to make it available for the next LS (online)
+      if(resetMEsAfterWriting)
+	const_cast<MonitorElement*>(&*mi)->Reset();
     }
   }
 

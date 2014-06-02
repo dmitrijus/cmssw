@@ -305,7 +305,7 @@ DQMFileSaver::saveForFilterUnitPB(int run, int lumi)
 
   // Save the file
   // TODO(diguida): check if this is mutithread friendly!
-  dbe_->savePB(filename, filterName_);
+  dbe_->savePB(filename, filterName_, true);
   saveJson(run, lumi, filename_json, filename);
 }
 
@@ -328,7 +328,8 @@ DQMFileSaver::saveForFilterUnit(const std::string& rewrite, int run, int lumi)
              0,
              (DQMStore::SaveReferenceTag) saveReference_,
              saveReferenceQMin_,
-             fileUpdate_);
+             fileUpdate_,
+	     true);
   saveJson(run, lumi, filename_json, filename);
 }
 

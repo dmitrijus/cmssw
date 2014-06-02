@@ -9,6 +9,9 @@
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
 
+#include "DQMServices/Core/interface/DQMStore.h"
+#include "DQMServices/Core/interface/MonitorElement.h"
+
 #include <memory>
 
 namespace edm {
@@ -46,10 +49,12 @@ void DQMStoreAnalyzer::beginRun(Run const&, EventSetup const&) { log("beginRun")
 void DQMStoreAnalyzer::endRun(Run const&, EventSetup const&) { log("endRun"); }
 
 void DQMStoreAnalyzer::beginLuminosityBlock(LuminosityBlock const&, EventSetup const&) {
-  std::vector<std::string> names = dqmStore.getMEs();
-  for (std::vector<std::string>::const_iterator name = names.begin(); name != meNames.end(); ++name) {
 
-    std::cout << "Name: " << name << std::endl;
+  edm::Service<DQMStore> store;
+  std::vector<std::string> names = store->getMEs();
+  for (std::vector<std::string>::const_iterator name = names.begin(); name != names.end(); ++name) {
+
+    std::cout << "Name: "<< *name << std::endl;
   }
 }
 

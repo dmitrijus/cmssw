@@ -305,7 +305,7 @@ DQMFileSaver::saveForFilterUnitPB(int run, int lumi)
 
   // Save the file
   // TODO(diguida): check if this is mutithread friendly!
-  dbe_->savePB(filename, filterName_);
+  dbe_->savePB(filename, filterName_, true);
   saveJson(run, lumi, filename_json, filename);
 }
 
@@ -328,7 +328,9 @@ DQMFileSaver::saveForFilterUnit(const std::string& rewrite, int run, int lumi)
              0,
              (DQMStore::SaveReferenceTag) saveReference_,
              saveReferenceQMin_,
-             fileUpdate_);
+             fileUpdate_,
+             true);
+
   saveJson(run, lumi, filename_json, filename);
 }
 
@@ -359,7 +361,7 @@ DQMFileSaver::DQMFileSaver(const edm::ParameterSet &ps)
     filterName_(""),
     version_ (1),
     runIsComplete_ (false),
-    enableMultiThread_(ps.getUntrackedParameter<bool>("enableMultiThread", false)),
+    enableMultiThread_ (false),
     saveByLumiSection_ (-1),
     saveByEvent_ (-1),
     saveByMinute_ (-1),
@@ -381,6 +383,9 @@ DQMFileSaver::DQMFileSaver(const edm::ParameterSet &ps)
     nevent_ (0),
     numKeepSavedFiles_ (5)
 {
+  // Determine if we are running multithreading asking to the DQMStore
+  enableMultiThread_ = dbe_->enableMultiThread_;
+
   // Determine the file saving convention, and adjust defaults accordingly.
   std::string convention = ps.getUntrackedParameter<std::string>("convention", "Offline");
   if (convention == "Offline")

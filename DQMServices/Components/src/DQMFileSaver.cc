@@ -255,7 +255,7 @@ filterUnitFilePrefix(const std::string &fileBaseName, const std::string &produce
 {
   // Create the file name using the convention for DAQ2
   char daqFileName[64]; // with current conventions, max size is 42
-  sprintf(daqFileName, "run%06d_ls%04d_stream%sFU_pid%05d", run, lumi, producer.c_str(), getpid());
+  sprintf(daqFileName, "run%06d_ls%04d_stream%sFU_pid%05d", run, lumi, producer.c_str(), 15);
   std::string fileprefix = fileBaseName + daqFileName;
   return fileprefix;
 }

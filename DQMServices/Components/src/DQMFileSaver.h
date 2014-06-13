@@ -69,6 +69,7 @@ private:
 
   std::string	fileBaseName_;
   std::string	fileUpdate_;
+  std::string streamLabel_;
 
   DQMStore	*dbe_;
 

@@ -765,7 +765,6 @@ DQMStore::book(const std::string &dir, const std::string &name,
     if (MonitorElement *refme = findObject(refdir, name))
     {
       me->data_.flags |= DQMNet::DQM_PROP_HAS_REFERENCE;
-      me->reference_ = refme->object_;
     }
 
     // Return the monitor element.
@@ -2370,24 +2369,37 @@ void DQMStore::savePB(const std::string &filename,
     {
       // Skip if it isn't a direct child.
       if (*di != *mi->data_.dirname)
-	continue;
-      // Skip if it is not a ROOT object
-      if ((*mi).kind() < MonitorElement::DQM_KIND_TH1F)
         continue;
 
       if (verbose_ > 1)
-	std::cout << "DQMStore::savePB: saving monitor element '"
-		  << *mi->data_.dirname << "/" << mi->data_.objname << "'\n";
+        std::cout << "DQMStore::savePB: saving monitor element '"
+        << *mi->data_.dirname << "/" << mi->data_.objname << "'\n";
 
       nme++;
       dqmstorepb::ROOTFilePB::Histo* me = dqmstore_message.add_histo();
       me->set_full_pathname((*mi->data_.dirname) + '/' + mi->data_.objname);
+      me->set_flags(mi->data_.flags);
+
+      TObject *toWrite = nullptr;
+      bool deleteObject = false;
+
+      if (mi->kind() < MonitorElement::DQM_KIND_TH1F) {
+        toWrite = new TObjString(mi->tagString().c_str());
+        deleteObject = true;
+      } else {
+        toWrite = mi->object_;
+      }
+
       TBufferFile buffer(TBufferFile::kWrite);
-      buffer.WriteObject(mi->object_);
+      buffer.WriteObject(toWrite);
       me->set_size(buffer.Length());
       me->set_streamed_histo((const void*)buffer.Buffer(),
                              buffer.Length());
-      //delete mi->object_;
+
+      if (deleteObject) {
+        delete toWrite;
+      }
+
       const_cast<MonitorElement*>(&*mi)->Reset();
     }
   }
@@ -2785,7 +2797,7 @@ DQMStore::load(const std::string &filename,
   if (!s_rxpbfile.match(filename, 0, 0))
     return readFile(filename, overwrite, "", "", stripdirs, fileMustExist);
   else
-    return readFilePB(filename, false, "", "", stripdirs, fileMustExist);
+    return readFilePB(filename, overwrite, "", "", stripdirs, fileMustExist);
 }
 
 /// private readFile <filename>, and copy MonitorElements;
@@ -2853,13 +2865,15 @@ inline TObject * DQMStore::extractNextObject(TBufferFile &buf) const {
   if (buf.Length() == buf.BufferSize())
     return 0;
   buf.InitMap();
-  return reinterpret_cast<TObject *>(buf.ReadObjectAny(0));
+  void *ptr = buf.ReadObjectAny(0);
+  return reinterpret_cast<TObject *>(ptr);
 }
 
 void DQMStore::get_info(const dqmstorepb::ROOTFilePB::Histo &h,
                         std::string &dirname,
                         std::string &objname,
-                        TH1 ** obj) {
+                        TObject ** obj) {
+
   size_t slash = h.full_pathname().rfind('/');
   size_t dirpos = (slash == std::string::npos ? 0 : slash);
   size_t namepos = (slash == std::string::npos ? 0 : slash+1);
@@ -2869,7 +2883,7 @@ void DQMStore::get_info(const dqmstorepb::ROOTFilePB::Histo &h,
                   (void*)h.streamed_histo().data(),
                   kFALSE);
   buf.Reset();
-  *obj = static_cast<TH1*>(extractNextObject(buf));
+  *obj = extractNextObject(buf);
   if (!*obj) {
     raiseDQMError("DQMStore", "Error reading element:'%s'" , h.full_pathname().c_str());
   }
@@ -2916,16 +2930,35 @@ DQMStore::readFilePB(const std::string &filename,
   for (int i = 0; i < dqmstore_message.histo_size(); i++) {
     std::string path;
     std::string objname;
-    TH1 *obj = NULL;
+
+    TObject *obj = NULL;
     const dqmstorepb::ROOTFilePB::Histo &h = dqmstore_message.histo(i);
     get_info(h, path, objname, &obj);
+
     setCurrentFolder(path);
     if (obj)
     {
-      extract(static_cast<TObject *>(obj), path, overwrite);
+      /* Before calling the extract() check if histogram exists:
+       * if it does - flags for the given monitor are already set (and merged)
+       * else - set the flags after the histogram is created.
+       */
+      MonitorElement *me = findObject(path, objname);
+
+      bool oldCollate = collateHistograms_;
+      collateHistograms_ = true;
+      extract(static_cast<TObject *>(obj), path, false);
+      collateHistograms_ = oldCollate;
+
+      if (me == nullptr) {
+        me = findObject(path, objname);
+        me->data_.flags = h.flags();
+      }
+
       delete obj;
     }
   }
+
+  cd();
   return true;
 }
 

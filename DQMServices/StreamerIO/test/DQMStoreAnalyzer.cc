@@ -49,9 +49,16 @@ void DQMStoreAnalyzer::beginRun(Run const&, EventSetup const&) { log("beginRun")
 void DQMStoreAnalyzer::endRun(Run const&, EventSetup const&) { log("endRun"); }
 
 void DQMStoreAnalyzer::beginLuminosityBlock(LuminosityBlock const&, EventSetup const&) {
+  log("beginLumi");
 
   edm::Service<DQMStore> store;
-  std::vector<std::string> names = store->getMEs();
+  std::vector<std::string> names = store->getSubdirs();
+  for (std::vector<std::string>::const_iterator name = names.begin(); name != names.end(); ++name) {
+
+    std::cout << "Directory: "<< *name << std::endl;
+  }
+
+  names = store->getMEs();
   for (std::vector<std::string>::const_iterator name = names.begin(); name != names.end(); ++name) {
 
     std::cout << "Name: "<< *name << std::endl;

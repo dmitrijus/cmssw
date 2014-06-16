@@ -2381,7 +2381,8 @@ void DQMStore::savePB(const std::string &filename,
 
       if (verbose_ > 1)
         std::cout << "DQMStore::savePB: saving monitor element '"
-        << *mi->data_.dirname << "/" << mi->data_.objname << "'\n";
+        << *mi->data_.dirname << "/" << mi->data_.objname << "'"
+        << "flags " << mi->data_.flags << "\n";
 
       nme++;
       dqmstorepb::ROOTFilePB::Histo* me = dqmstore_message.add_histo();

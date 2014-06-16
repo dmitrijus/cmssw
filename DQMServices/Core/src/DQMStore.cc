@@ -787,7 +787,7 @@ DQMStore::book(const std::string &dir,
     print_trace(dir, name);
 
   // Check if the request monitor element already exists.
-  if (MonitorElement *me = findObject(dir, name))
+  if (MonitorElement *me = findObject(dir, name, run_, 0, streamId_, moduleId_))
   {
     if (verbose_ > 1)
     {
@@ -805,8 +805,8 @@ DQMStore::book(const std::string &dir,
   {
     // Create it and return for initialisation.
     assert(dirs_.count(dir));
-    MonitorElement nme(&*dirs_.find(dir), name);
-    return &const_cast<MonitorElement &>(*data_.insert(nme).first);
+    MonitorElement proto(&*dirs_.find(dir), name, run_, streamId_, moduleId_);
+    return &const_cast<MonitorElement &>(*data_.insert(proto).first);
   }
 }
 
@@ -817,7 +817,7 @@ DQMStore::bookInt(const std::string &dir, const std::string &name)
 {
   if (collateHistograms_)
   {
-    if (MonitorElement *me = findObject(dir, name))
+    if (MonitorElement *me = findObject(dir, name, run_, 0, streamId_, moduleId_))
     {
       me->Fill(0);
       return me;
@@ -847,7 +847,7 @@ DQMStore::bookFloat(const std::string &dir, const std::string &name)
 {
   if (collateHistograms_)
   {
-    if (MonitorElement *me = findObject(dir, name))
+    if (MonitorElement *me = findObject(dir, name, run_, 0, streamId_, moduleId_))
     {
       me->Fill(0.);
       return me;
@@ -879,7 +879,7 @@ DQMStore::bookString(const std::string &dir,
 {
   if (collateHistograms_)
   {
-    if (MonitorElement *me = findObject(dir, name))
+    if (MonitorElement *me = findObject(dir, name, run_, 0, streamId_, moduleId_))
       return me;
   }
 

@@ -6,7 +6,6 @@
 
 #include "DQMFileIterator.h"
 
-#include "boost/shared_ptr.hpp"
 #include "boost/filesystem.hpp"
 
 #include <memory>
@@ -69,7 +68,7 @@ class DQMStreamerReader : public StreamerInputSource {
   DQMFileIterator fiterator_;
 
   std::unique_ptr<StreamerInputFile> streamReader_;
-  boost::shared_ptr<EventSkipperByID> eventSkipperByID_;
+  std::shared_ptr<EventSkipperByID> eventSkipperByID_;
 };
 
 }  //end-of-namespace-def

@@ -85,6 +85,7 @@ InputSource::ItemType DQMProtobufReader::getNextItemType() {
         //fiterator_.logFileAction("Initiating request to open file ", p);
         return InputSource::IsLumi;
       } else {
+        fiterator_.logFileAction("Data file is missing ", p);
         fiterator_.pop();
         continue;
       }

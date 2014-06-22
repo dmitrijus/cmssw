@@ -119,10 +119,14 @@ DQMProtobufReader::readLuminosityBlockAuxiliary_() {
     edm::Timestamp()
   );
 
-  return boost::shared_ptr<edm::LuminosityBlockAuxiliary>(aux);
+  return std::shared_ptr<edm::LuminosityBlockAuxiliary>(aux);
 };
 
-void DQMProtobufReader::readRun_(edm::RunPrincipal& rpCache) {}
+void DQMProtobufReader::readRun_(edm::RunPrincipal& rpCache) {
+  fiterator_.logFileAction("readRun_");
+
+  rpCache.fillRunPrincipal(processHistoryRegistryForUpdate());
+}
 
 void DQMProtobufReader::readLuminosityBlock_(
     edm::LuminosityBlockPrincipal& lbCache) {

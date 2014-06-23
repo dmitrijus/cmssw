@@ -337,6 +337,11 @@ void DQMStore::mergeAndResetMEsRunSummaryCache(uint32_t run,
               << run
               << ", stream: " << streamId
               << " module: " << moduleId << std::endl;
+
+  if (LSbasedMode_) {
+    return;
+  }
+
   std::string null_str("");
   MonitorElement proto(&null_str, null_str, run, streamId, moduleId);
   std::set<MonitorElement>::const_iterator e = data_.end();

@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 patMuons = cms.EDProducer("PATMuonProducer",
     # input
-    muonSource      = cms.InputTag("muons"),
+    muonSource      = cms.InputTag("muons1stStep"),
 
     # use particle flow instead of std reco
     useParticleFlow =  cms.bool( False ),

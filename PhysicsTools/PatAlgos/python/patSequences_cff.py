@@ -15,7 +15,7 @@ from PhysicsTools.PatAlgos.selectionLayer1.countPatCandidates_cff import *
 patDefaultSequence = cms.Sequence(
 # remove this (particleFlowPtrs) after we switch to unscheduled mode everywhere
 # too many places to change otherwise
-    particleFlowPtrs *
+    particleFlowTmpPtrs *
     patCandidates * 
     selectedPatCandidates *
     cleanPatCandidates *

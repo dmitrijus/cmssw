@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 lostTracks = cms.EDProducer("PATLostTracks",
-    inputCandidates = cms.InputTag("particleFlow"),
+    inputCandidates = cms.InputTag("particleFlowTmp"),
     packedPFCandidates	= cms.InputTag("packedPFCandidates"),
     inputTracks = cms.InputTag("generalTracks"),
     secondaryVertices = cms.InputTag("inclusiveSecondaryVertices"),

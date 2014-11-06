@@ -7,6 +7,7 @@ from CommonTools.ParticleFlow.goodOfflinePrimaryVertices_cfi import *
 pfPileUpJME = pfPileUp.clone( PFCandidates='particleFlowPtrs',
                               Vertices = 'goodOfflinePrimaryVertices',
                               checkClosestZVertex = False )
+
 pfNoPileUpJME = pfNoPileUp.clone( topCollection = 'pfPileUpJME',
                                   bottomCollection = 'particleFlowPtrs' )
 

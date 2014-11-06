@@ -11,47 +11,6 @@ from copy import deepcopy
 def warningIsolation():
     print "WARNING: particle based isolation must be studied"
 
-def adaptPFIsoElectrons(process,module, postfix = "PFIso", dR = "04"):
-    #FIXME: adaptPFElectrons can use this function.
-    module.isoDeposits = cms.PSet(
-        pfChargedHadrons = cms.InputTag("elPFIsoDepositCharged" + postfix),
-        pfChargedAll = cms.InputTag("elPFIsoDepositChargedAll" + postfix),
-        pfPUChargedHadrons = cms.InputTag("elPFIsoDepositPU" + postfix),
-        pfNeutralHadrons = cms.InputTag("elPFIsoDepositNeutral" + postfix),
-        pfPhotons = cms.InputTag("elPFIsoDepositGamma" + postfix)
-        )
-    module.isolationValues = cms.PSet(
-        pfChargedHadrons = cms.InputTag("elPFIsoValueCharged"+dR+"PFId"+ postfix),
-        pfChargedAll = cms.InputTag("elPFIsoValueChargedAll"+dR+"PFId"+ postfix),
-        pfPUChargedHadrons = cms.InputTag("elPFIsoValuePU"+dR+"PFId" + postfix),
-        pfNeutralHadrons = cms.InputTag("elPFIsoValueNeutral"+dR+"PFId" + postfix),
-        pfPhotons = cms.InputTag("elPFIsoValueGamma"+dR+"PFId" + postfix)
-        )
-    module.isolationValuesNoPFId = cms.PSet(
-        pfChargedHadrons = cms.InputTag("elPFIsoValueCharged"+dR+"NoPFId"+ postfix),
-        pfChargedAll = cms.InputTag("elPFIsoValueChargedAll"+dR+"NoPFId"+ postfix),
-        pfPUChargedHadrons = cms.InputTag("elPFIsoValuePU"+dR+"NoPFId" + postfix),
-        pfNeutralHadrons = cms.InputTag("elPFIsoValueNeutral"+dR+"NoPFId" + postfix),
-        pfPhotons = cms.InputTag("elPFIsoValueGamma"+dR+"NoPFId" + postfix)
-        )
-
-def adaptPFIsoMuons(process,module, postfix = "PFIso", dR = "04"):
-    #FIXME: adaptPFMuons can use this function.
-    module.isoDeposits = cms.PSet(
-        pfChargedHadrons = cms.InputTag("muPFIsoDepositCharged" + postfix),
-        pfChargedAll = cms.InputTag("muPFIsoDepositChargedAll" + postfix),
-        pfPUChargedHadrons = cms.InputTag("muPFIsoDepositPU" + postfix),
-        pfNeutralHadrons = cms.InputTag("muPFIsoDepositNeutral" + postfix),
-        pfPhotons = cms.InputTag("muPFIsoDepositGamma" + postfix)
-        )
-    module.isolationValues = cms.PSet(
-        pfChargedHadrons = cms.InputTag("muPFIsoValueCharged" + dR + postfix),
-        pfChargedAll = cms.InputTag("muPFIsoValueChargedAll" + dR + postfix),
-        pfPUChargedHadrons = cms.InputTag("muPFIsoValuePU" + dR + postfix),
-        pfNeutralHadrons = cms.InputTag("muPFIsoValueNeutral" + dR + postfix),
-        pfPhotons = cms.InputTag("muPFIsoValueGamma" + dR + postfix)
-        )
-
 def adaptPFMuons(process,module,postfix="", muonMatchModule=None ):
     print "Adapting PF Muons "
     print "***************** "

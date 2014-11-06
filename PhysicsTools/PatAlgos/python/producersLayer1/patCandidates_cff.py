@@ -19,15 +19,3 @@ patCandidateSummary = cms.EDAnalyzer("CandidateSummaryTable",
         cms.InputTag("patMETs"),
     )
 )
-
-## for scheduled mode
-patCandidates = cms.Sequence(
-    makePatElectrons +
-    makePatMuons     +
-    makePatTaus      +
-    makePatPhotons   +
-    makePatJets      +
-    makePatMETs      +
-    patCandidateSummary
-)
-

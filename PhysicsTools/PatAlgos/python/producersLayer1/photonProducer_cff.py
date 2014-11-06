@@ -29,11 +29,3 @@ patPhotons.isolationValues = cms.PSet(
     pfNeutralHadrons = cms.InputTag("phPFIsoValueNeutral04PFId" ),
     pfPhotons = cms.InputTag("phPFIsoValueGamma04PFId" ),
     )
-
-## for scheduled mode
-makePatPhotons = cms.Sequence(
-    pfParticleSelectionForIsoSequence *
-    pfPhotonIsolationSequence *
-    photonMatch *
-    patPhotons
-    )

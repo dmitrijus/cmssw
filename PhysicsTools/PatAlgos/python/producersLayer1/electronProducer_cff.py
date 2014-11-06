@@ -40,9 +40,9 @@ patElectrons.isolationValuesNoPFId = cms.PSet(
     )
 
 ## for scheduled mode
-makePatElectrons = cms.Sequence(
-    pfParticleSelectionForIsoSequence *
-    pfElectronIsolationSequence *
-    electronMatch *
-    patElectrons
-    )
+#makePatElectrons = cms.Sequence(
+#    pfParticleSelectionForIsoSequence *
+#    pfElectronIsolationSequence *
+#    electronMatch *
+#    patElectrons
+#    )

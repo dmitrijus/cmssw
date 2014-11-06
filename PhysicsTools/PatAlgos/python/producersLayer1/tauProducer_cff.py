@@ -17,18 +17,3 @@ from PhysicsTools.PatAlgos.mcMatchLayer0.tauMatch_cfi import *
 
 # produce object
 from PhysicsTools.PatAlgos.producersLayer1.tauProducer_cfi import *
-
-makePatTaus = cms.Sequence(
-    # reco pre-production
-    patHPSPFTauDiscrimination *
-    patPFCandidateIsoDepositSelection *
-    patPFTauIsolation *
-    #patTauJetCorrections *
-    # pat specifics
-    tauMatch *
-    tauGenJets *
-    tauGenJetsSelectorAllHadrons *
-    tauGenJetMatch *
-    # object production
-    patTaus
-)

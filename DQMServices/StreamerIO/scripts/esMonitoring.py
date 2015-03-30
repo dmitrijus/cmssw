@@ -6,6 +6,7 @@ import socket, fcntl, select, atexit, signal
 import sys, os, time, datetime
 import collections
 import json
+import zlib
 
 def log(s):
     sys.stderr.write("m: " + s + "\n");
@@ -15,10 +16,16 @@ def dt2time(dt):
     # convert datetime timstamp to unix
     return time.mktime(dt.timetuple())
 
+class JsonEncoder(json.JSONEncoder):
+        def default(self, obj):
+            if hasattr(obj, 'to_json'):
+                x = obj.to_json()
+                return json.JSONEncoder.encode(self, x)
+
+            return json.JSONEncoder.default(self, obj)
+
 class ElasticReport(object):
-    def __init__(self, pid, history, json, args):
-        self.s_history = history
-        self.s_json = json
+    def __init__(self, pid, args):
         self.s_path = "/tmp/dqm_monitoring/"
 
         self.last_make_report = None
@@ -55,15 +62,13 @@ class ElasticReport(object):
                 self.doc["run"] = run
 
         self.make_id()
-        self.find_stdout()
 
-    def find_stdout(self):
-        try:
-            self.doc["stdout_fn"] = os.readlink("/proc/self/fd/1")
-            self.doc["stderr_fn"] = os.readlink("/proc/self/fd/2")
-        except:
-            pass
-        
+        if os.environ.has_key("GZIP_LOG"):
+            self.doc["stdlog_gzip"] = os.environ["GZIP_LOG"]
+
+        self.update_doc({ "extra": {
+            "environ": dict(os.environ)
+        }})
 
     def make_id(self):
         id = self.id_format % self.doc
@@ -82,17 +87,6 @@ class ElasticReport(object):
 
     def update_doc(self, keys):
         self.update_doc_recursive(self.doc, keys)
-
-    def update_from_json(self):
-        while self.s_json.have_docs():
-            doc = self.s_json.get_doc()
-
-            # convert some values to integers
-            for k in ["pid", "run", "lumi"]:
-                if doc.has_key(k):
-                    doc[k] = int(doc[k])
-
-            self.update_doc_recursive(self.doc, doc)
 
     def update_ps_status(self):
         try:
@@ -123,15 +117,9 @@ class ElasticReport(object):
         except:
             pass
 
-    def update_stdlog(self):
-        if self.s_history:
-            txt = self.s_history.read()
-            self.update_doc({ 'extra': { 'stdlog': txt } })
-
     def make_report(self):
         self.last_make_report = time.time()
         self.doc["report_timestamp"] = time.time()
-        self.update_from_json()
         self.make_id()
 
         if not os.path.isdir(self.s_path):
@@ -140,154 +128,207 @@ class ElasticReport(object):
 
         self.update_ps_status()
         self.update_mem_status()
-        self.update_stdlog()
 
         fn_id = self.doc["_id"] + ".jsn"
-
-        if args.debug:
-            tm = "%.06f+" % time.time()
-            fn_id = tm + fn_id
 
         fn = os.path.join(self.s_path, fn_id) 
         fn_tmp = os.path.join(self.s_path, fn_id + ".tmp") 
 
         with open(fn_tmp, "w") as f:
-            json.dump(self.doc, f, indent=True)
+            json.dump(self.doc, f, indent=True, cls=JsonEncoder)
 
         os.rename(fn_tmp, fn)
+
+        if self.args.debug:
+            log("File %s written." % fn)
 
     def try_update(self):
         # first time
         if self.last_make_report is None:
             return self.make_report()
 
-        # if json stream has updates
-        if self.s_json and self.s_json.have_docs():
-            # just apply them, it still goes through timer
-            self.update_from_json()
-
         now = time.time()
         delta = now - self.last_make_report
         if delta > self.make_report_timer:
             return self.make_report()
 
-    def write(self, rbuf):
+    def ping(self):
         self.try_update()
 
-    def flush(self):
-        self.try_update()
+class LineHistoryEnd(object):
+    def __init__(self, max_bytes=64*1024, max_lines=1024):
+        self.max_bytes = max_bytes
+        self.max_lines = max_lines
 
-class History(object):
-    def __init__(self, history_size=8*1024):
-        self.max_size = history_size
         self.buf = collections.deque()
         self.size = 0
 
     def pop(self):
-        if not len(self.buf):
-            return None
-
         elm = self.buf.popleft()
         self.size -= len(elm)
-
-        return elm
 
     def push(self, rbuf):
         self.buf.append(rbuf)
         self.size += len(rbuf)
 
-    def write(self, rbuf):
-        l = len(rbuf)
-        while (self.size + l) >= self.max_size:
+    def write(self, line):
+        line_size = len(line)
+
+        while (self.size + line_size) > self.max_bytes:
             self.pop()
 
-        self.push(rbuf)
+        while (len(self.buf) + 1) > self.max_lines:
+            self.pop()
 
-    def read(self):
+        self.push(line)
+
+    def dump(self):
         return "".join(self.buf)
 
-    def flush(self):
-        pass
+    def to_json(self):
+        return self.dump()
 
-class JsonInput(object):
-    def __init__(self):
-        self.buf = []
-        self.docs = []
-    
-    def parse_line(self, line):
-        if not line.strip():
-            # this is keep alive
-            # not yet implemented
+class LineHistoryStart(LineHistoryEnd):
+    def __init__(self, *kargs, **kwargs):
+        LineHistoryEnd.__init__(self, *kargs, **kwargs)
+        self.done = False
+
+    def write(self, line):
+        if self.done:
             return
 
-        try:
-            doc = json.loads(line)
-            self.docs.append(doc)
-        except:
-            log("cannot deserialize json: %s" % line)
+        if ((self.size + len(line)) > self.max_bytes):
+            self.done = True
+            return
 
-    def get_doc(self):
-        return self.docs.pop(0)
+        if (len(self.buf) > self.max_lines):
+            self.done = True
+            return
 
-    def have_docs(self):
-        return len(self.docs) > 0
+        self.push(line)
 
-    def write(self, rbuf):
-        self.buf.append(rbuf)
+class FDManager(object):
+    def __init__(self):
+        self.fd_map = {}
+        self.timeout_handlers = []
+
+        self.poll = select.poll()
+    
+    def register_fd(self, fd, mask, handler):
+        if self.fd_map.has_key(fd):
+            raise Exception("FD Already registered.")
+
+        self.poll.register(fd, mask)
+        self.fd_map[fd] = handler
+
+    def unregister_fd(self, fd):
+        self.poll.unregister(fd)
+        del self.fd_map[fd]
+
+    def register_timeout(self, handler):
+        if handler in self.timeout_handlers:
+            raise Exception("Timeout handler already registered.")
+
+        self.timeout_handlers.append(handler)
+
+    def unregister_timeout(self, handler):
+        self.timeout_handlers.remove(handler)
+
+    def event_loop(self, timeout=30):
+        while self.fd_map:
+            evts = self.poll.poll(int(timeout*1000))
+
+            if len(evts) == 0:
+                for th in self.timeout_handlers:
+                    th.handle_timeout()
+
+            for fd, evt in evts:
+                handler = self.fd_map[fd]
+                handler(fd, evt)
+                
+class FDLineReader(object):
+    def __init__(self, manager, fd):
+        self.manager = manager
+        self.fd = fd
+        self.line_buf = []
+        
+        self.start_fd()
+
+    def start_fd(self):
+        self.manager.register_fd(self.fd, select.POLLIN, self.handle_read)
+
+    def stop_fd(self):
+        self.manager.unregister_fd(self.fd)
+
+    def handle_line(self, line):
+        log("Received line: %s" % repr(line))
+
+    def handle_read(self, fd, event):
+        rbuf = os.read(fd, 1024*16)
+        if len(rbuf) == 0:
+            # closing fd
+            if len(self.line_buf):
+                self.handle_line("".join(self.line_buf))
+                self.line_buf = []
+            self.stop_fd()
+
+        self.line_buf.append(rbuf)
         if "\n" in rbuf:
             # split whatever we have
-            all = "".join(self.buf)
-            spl = all.split("\n")
+            spl = "".join(self.line_buf).split("\n")
 
             while len(spl) > 1:
                 line = spl.pop(0)
-                self.parse_line(line)
+                self.handle_line(line + "\n")
 
-            self.buf = [spl[0]]
+            if len(spl[0]):
+                self.line_buf = [spl[0]]
+            else:
+                self.line_buf = []
 
-    def flush(self):
+    def fd_close(self):
         pass
 
-class DescriptorCapture(object):
-    def __init__(self, f, write_files=[]):
-        self.f = f
-        self.fd = f.fileno()
-        self.write_files = write_files
+class FDJsonInput(FDLineReader):
+    def __init__(self, manager, fd, es):
+        self.es = es
 
-    def read_in(self, rbuf):
-        for f in self.write_files:
-            f.write(rbuf)
-            f.flush()
+        FDLineReader.__init__(self, manager, fd)
 
-    def close_in(self):
-        log("closed fd %d" % self.fd)
-        self.f.close()
+    def handle_line(self, line):
+        try:
+            doc = json.loads(line)
 
-    @staticmethod
-    def event_loop(desc, timeout, timeout_call=None):
-        fd_map = {}
-        p = select.poll()
+            for k in ["pid", "run", "lumi"]:
+                if doc.has_key(k):
+                    doc[k] = int(doc[k])
 
-        for desc in desc:
-            fd_map[desc.fd] = desc
-            p.register(desc.fd, select.POLLIN)
+            self.es.update_doc_recursive(self.es.doc, doc)
+            self.es.ping()
+        except:
+            log("cannot deserialize json: %s" % line)
 
-        while len(fd_map) > 0:
-            events = p.poll(timeout)
-            if len(events) == 0:
-                if timeout_call:
-                    timeout_call()
+class FDHistory(FDLineReader):
+    def __init__(self, manager, fd, es):
+        self.es = es
 
-            for fd, ev in events:
-                rbuf = os.read(fd, 1024)
-                if len(rbuf) == 0:
-                    fd_map[fd].close_in()
+        self.start = LineHistoryStart();
+        self.end = LineHistoryEnd()
 
-                    p.unregister(fd)
-                    del fd_map[fd]
-                else:
-                    fd_map[fd].read_in(rbuf)
+        self.es.update_doc({ 'extra': { 'stdlog': self.start } })
+        self.es.update_doc({ 'extra': { 'stdlog_start': self.end } })
 
+        FDLineReader.__init__(self, manager, fd)
+
+    def handle_line(self, line):
+        #log("Received log line: %s" % repr(line))
+
+        sys.stdout.write(line)
+        sys.stdout.flush()
+        
+        self.start.write(line)
+        self.end.write(line)
+        self.es.ping()
 
 def create_fifo():
     prefix = "/tmp"
@@ -335,21 +376,20 @@ def launch_monitoring(args):
         env = os.environ
         env["DQMMON_UPDATE_PIPE"] = fifo
 
-    p = subprocess.Popen(args.pargs, preexec_fn=preexec, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(args.pargs, preexec_fn=preexec, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     CURRENT_PROC.append(p)
 
     mon_file = os.fdopen(mon_fd)
-    s_hist = History()
-    s_json = JsonInput()
-    report_sink = ElasticReport(pid=p.pid, history=s_hist, json=s_json, args=args)
 
-    stdout_cap = DescriptorCapture(p.stdout, write_files=[sys.stdout, s_hist, report_sink, ], )
-    stderr_cap = DescriptorCapture(p.stderr, write_files=[sys.stderr, s_hist, report_sink, ], )
-    stdmon_cap = DescriptorCapture(mon_file, write_files=[s_json, report_sink, ],)
+    manager = FDManager()
+    es = ElasticReport(pid=p.pid, args=args)
 
-    fs = [stdout_cap, stderr_cap, stdmon_cap]
+    log_handler = FDHistory(manager, p.stdout.fileno(), es=es)
+    json_handler = FDJsonInput(manager, mon_fd, es)
+
+    log_handler.handle_line("-- starting process: %s --\n" % str(args.pargs))
     try:
-        DescriptorCapture.event_loop(fs, timeout=1000, timeout_call=report_sink.flush)
+        manager.event_loop(timeout=5)
     except select.error, e:
         # we have this on ctrl+c
         # just terminate the child
@@ -358,11 +398,12 @@ def launch_monitoring(args):
 
     # at this point the program is dead
     r =  p.wait()
+    log_handler.handle_line("\n-- process exit: %s --\n" % str(r))
+
+    es.update_doc({ "exit_code": r })
+    es.make_report()
+
     CURRENT_PROC.remove(p)
-
-    report_sink.update_doc({ "exit_code": r })
-    report_sink.make_report()
-
     return r
 
 def handle_signal(signum, frame):
@@ -370,11 +411,17 @@ def handle_signal(signum, frame):
         proc.send_signal(signum)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Monitor a child process - produces elastic search documents.")
-    parser.add_argument("-t", type=int, default="2", help="Timeout in seconds.")
-    parser.add_argument("--debug", "-d", action='store_true', default=False, help="Enables debugging mode: es documents will have timestamp in the name.")
-    parser.add_argument("pargs", nargs=argparse.REMAINDER)
+    parser = argparse.ArgumentParser(description="Monitor a child process and produce es documents.")
+    parser.add_argument('--debug', '-d', action='store_true', help="Debug mode")
+    parser.add_argument('pargs', nargs=argparse.REMAINDER)
     args = parser.parse_args()
+
+    if not args.pargs:
+        parser.print_help()
+        sys.exit(-1)
+    elif args.pargs[0] == "--":
+        # compat with 2.6
+        args.pargs = args.pargs[1:]
 
     # do some signal magic
     signal.signal(signal.SIGINT, handle_signal)

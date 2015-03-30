@@ -26,6 +26,7 @@
 #include <boost/format.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/asio.hpp>
 
 /*
  * This service is very similar to the FastMonitoringService in the HLT,
@@ -35,6 +36,7 @@
 namespace dqmservices {
 
 using boost::property_tree::ptree;
+
 using edm::StreamID;
 using edm::StreamContext;
 using edm::GlobalContext;
@@ -44,6 +46,7 @@ class DQMMonitoringService {
     DQMMonitoringService(const edm::ParameterSet &, edm::ActivityRegistry&);
     ~DQMMonitoringService();
 
+    void connect();
     void keepAlive();
     void outputUpdate(ptree& doc);
 
@@ -53,12 +56,16 @@ class DQMMonitoringService {
     //void makeReport();
 
   private:
-    std::shared_ptr<std::ostream> mstream_;
-    ptree doc_;
+    boost::asio::local::stream_protocol::iostream mstream_;
 
+    // global number of events processed
     long nevents_;
-    long last_report_nevents_;
-    std::chrono::high_resolution_clock::time_point last_report_time_;
+
+    // time point, number of events and the lumi number at the time we switched to it
+    long last_lumi_;
+    std::chrono::high_resolution_clock::time_point last_lumi_time_;
+    std::chrono::high_resolution_clock::time_point last_update_time_;
+    long last_lumi_nevents_;
 };
 
 } // end-of-namespace

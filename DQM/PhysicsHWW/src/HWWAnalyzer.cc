@@ -177,11 +177,15 @@ void HWWAnalyzer::bookHistograms(DQMStore::IBooker & ibooker,edm::Run const &, e
 }
 
 void HWWAnalyzer::FillHistograms(){
+  std::map<int, EventMonitor::Entry> sortedCounters;
+  for (auto it = eventMonitor.monitor.counters_.begin(); it != eventMonitor.monitor.counters_.end(); ++it) {
+    sortedCounters[it->second.insert_order] = it->second;
+  }
 
   for (unsigned int i=0; i<4; i++){
-    for (unsigned int j=0; j<eventMonitor.monitor.counters.size(); j++){
-      cutflowHist[i]->setBinContent(j+1, eventMonitor.monitor.counters[j].nevt[i] - 1); //the "- 1" accounts for the initial count in the EventMonitor constructor
-      cutflowHist[i]->setBinLabel(j+1, eventMonitor.monitor.counters[j].name.c_str(), 1);
+    for (unsigned int j=0; j < sortedCounters.size(); j++){
+      cutflowHist[i]->setBinContent(j+1, sortedCounters[j].nevt[i]);
+      cutflowHist[i]->setBinLabel(j+1, sortedCounters[j].name.c_str(), 1);
     }
   }
 

@@ -554,6 +554,7 @@ class DQMStore
   bool                          load(const std::string &filename,
                                      OpenRunDirs stripdirs = StripRunDirs,
                                      bool fileMustExist = true);
+  bool                          mtEnabled() { return enableMultiThread_; };
 
   //-------------------------------------------------------------------------
   // ---------------------- Public print methods -----------------------------

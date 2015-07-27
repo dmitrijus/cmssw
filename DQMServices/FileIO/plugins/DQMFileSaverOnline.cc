@@ -26,48 +26,25 @@ using namespace dqm;
 
 DQMFileSaverOnline::DQMFileSaverOnline(const edm::ParameterSet &ps)
     : DQMFileSaverBase(ps) {
-  backupLumi_ = 1;
-  lumiIndex_ = 0;
+
+  backupLumiCount_ = ps.getUntrackedParameter<int>("backupLumiCount", 1);
 }
 
 DQMFileSaverOnline::~DQMFileSaverOnline() {}
 
-void DQMFileSaverOnline::saveLumi() const {
-  lumiIndex_++;
-  if (lumiIndex_ >= backupLumi_) {
-    lumiIndex_ = 0;
+void DQMFileSaverOnline::saveLumi(FileParameters fp) const {
+  if (fp.lumi_ % backupLumiCount_ == 0) {
 
     // actual saving is done here
-    makeSnapshot(false);
+    makeSnapshot(fp, false);
   }
 }
 
-void DQMFileSaverOnline::saveRun() const {
-  makeSnapshot(true);
-
-  // do the final rename
-  //std::string prefix = filename(false);
-  //std::string root_fp = prefix + ".root";
-  //std::string meta_fp = prefix + ".output";
-
-  //logFileAction("Final DQM Root file: ", root_fp);
-  //logFileAction("Final DQM Origin file: ", meta_fp);
-
-  //checkError("rename failed", ::rename(currentSnapshot_.data.c_str(), root_fp.c_str()));
-  //checkError("rename failed", ::rename(currentSnapshot_.meta.c_str(), meta_fp.c_str()));
+void DQMFileSaverOnline::saveRun(FileParameters fp) const {
+  makeSnapshot(fp, true);
 }
 
-void DQMFileSaverOnline::makeSnapshot(bool final) const {
-  std::unique_lock<std::mutex> lck(lock_);
-
-  char rewrite[128];
-  if (!outputPrefix_.empty()) {
-    snprintf(rewrite, 128, "\\1Run %ld/\\2/Run summary/%s", fp_.run_,
-             outputPrefix_.c_str());
-  } else {
-    snprintf(rewrite, 128, "\\1Run %ld/\\2/Run summary", fp_.run_);
-  }
-
+void DQMFileSaverOnline::makeSnapshot(const FileParameters& fp, bool final) const {
   int pid = getpid();
   char hostname[64];
   gethostname(hostname, 64);
@@ -75,12 +52,12 @@ void DQMFileSaverOnline::makeSnapshot(bool final) const {
 
   char suffix[128];
   if (!final) {
-    snprintf(suffix, 127, ".ls%08ld_host%s_pid%08d", fp_.lumi_, hostname, pid);
+    snprintf(suffix, 127, ".ls%08ld_host%s_pid%08d", fp.lumi_, hostname, pid);
   } else {
     suffix[0] = 0;
   }
 
-  std::string prefix = filename(false);
+  std::string prefix = filename(fp, false);
 
   std::string root_fp = prefix + ".root" + suffix;
   std::string meta_fp = prefix + ".root.origin" + suffix;
@@ -92,41 +69,60 @@ void DQMFileSaverOnline::makeSnapshot(bool final) const {
   edm::Service<DQMStore> store;
 
   logFileAction("Writing DQM Root file: ", root_fp);
-  logFileAction("Writing DQM Origin file: ", meta_fp);
+  //logFileAction("Writing DQM Origin file: ", meta_fp);
+
+  char rewrite[128];
+  snprintf(rewrite, 128, "\\1Run %ld/\\2/Run summary", fp.run_);
 
   store->save(tmp_root_fp,                       /* filename      */
               "",                                /* path          */
               "^(Reference/)?([^/]+)",           /* pattern       */
               rewrite,                           /* rewrite       */
-              store->mtEnabled() ? fp_.run_ : 0, /* run           */
+              store->mtEnabled() ? fp.run_ : 0, /* run           */
               0,                                 /* lumi          */
-              fp_.saveReference_,                /* ref           */
-              fp_.saveReferenceQMin_,            /* ref minStatus */
+              fp.saveReference_,                /* ref           */
+              fp.saveReferenceQMin_,            /* ref minStatus */
               "RECREATE",                        /* fileupdate    */
               false                              /* resetMEs      */
               );
 
   // write metadata
   // format.origin: md5:d566a34b27f48d507150a332b189398b 294835 /home/dqmprolocal/output/DQM_V0001_FED_R000194224.root
-  std::ofstream fp(tmp_meta_fp);
-  fp << this->fillOrigin(tmp_root_fp, root_fp);
-  fp.close();
+  std::ofstream meta_fd(tmp_meta_fp);
+  meta_fd << this->fillOrigin(tmp_root_fp, root_fp);
+  meta_fd.close();
 
   checkError("rename failed", ::rename(tmp_root_fp.c_str(), root_fp.c_str()));
   checkError("rename failed", ::rename(tmp_meta_fp.c_str(), meta_fp.c_str()));
 
-  SnapshotFile old = currentSnapshot_;
-  currentSnapshot_ = { root_fp, meta_fp };
+  SnapshotFiles files = { root_fp, meta_fp };
+  if (final) {
+    // final will never be cleared
+    appendSnapshot(SnapshotFiles{});
 
-  // clear old snapshot
-  if (!old.data.empty()) {
-    logFileAction("Deleting old snapshot (root): ", old.data);
-    checkError("unlink failed", ::unlink(old.data.c_str()));
+    saveJobReport(root_fp);
+  } else {
+    appendSnapshot(SnapshotFiles{ root_fp, meta_fp });
+  }
+}
+
+void DQMFileSaverOnline::appendSnapshot(SnapshotFiles f) const {
+  std::lock_guard<std::mutex> lock(snapshots_lock_);
+
+  while (! snapshots_.empty()) {
+    SnapshotFiles& x = snapshots_.front();
+
+    //logFileAction("Deleting old snapshot (origin): ", x.meta);
+    checkError("unlink failed", ::unlink(x.meta.c_str()));
+
+    logFileAction("Deleting old snapshot (root): ", x.data);
+    checkError("unlink failed", ::unlink(x.data.c_str()));
+
+    snapshots_.pop_front();
   }
 
-  if (!old.meta.empty()) {
-    logFileAction("Deleting old snapshot (origin): ", old.meta);
-    checkError("unlink failed", ::unlink(old.meta.c_str()));
+  if (! f.data.empty()) {
+    snapshots_.push_back(f);
   }
 }
 

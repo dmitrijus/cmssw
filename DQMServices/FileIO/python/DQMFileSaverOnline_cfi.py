@@ -7,8 +7,11 @@ dqmSaver = cms.EDAnalyzer("DQMFileSaverOnline",
     # Directory in which to save the files.
     path = cms.untracked.string('./'),
 
-    ## Control reference saving (default / skip / qtests / all)
-    #referenceHandling = cms.untracked.string('all'),
-    ## Control which references are saved for qtests (default: STATUS_OK)
-    #referenceRequireStatus = cms.untracked.int32(100)
+    # Tag, used in the filename as the third term.
+    tag = cms.untracked.string('UNKNOWN'),
+
+    # Control reference saving (default / skip / qtests / all)
+    referenceHandling = cms.untracked.string('all'),
+    # Control which references are saved for qtests (default: STATUS_OK)
+    referenceRequireStatus = cms.untracked.int32(100)
 )

@@ -18,23 +18,23 @@ class DQMFileSaverOnline : public DQMFileSaverBase {
   ~DQMFileSaverOnline();
 
  protected:
-  void saveLumi() const;
-  void saveRun() const;
+  virtual void saveLumi(FileParameters fp) const;
+  virtual void saveRun(FileParameters fp) const;
 
  protected:
-  std::string outputPrefix_;
-  int backupLumi_;
-
-  mutable int lumiIndex_;
+  int backupLumiCount_;
 
   // snapshot making
-  struct SnapshotFile {
+  struct SnapshotFiles {
     std::string data;
     std::string meta;
   };
 
-  void makeSnapshot(bool final) const;
-  mutable SnapshotFile currentSnapshot_;
+  void makeSnapshot(const FileParameters &fp, bool final) const;
+  void appendSnapshot(SnapshotFiles new_snap) const;
+
+  mutable std::mutex snapshots_lock_;
+  mutable std::list<SnapshotFiles> snapshots_;
 
   void checkError(const char *msg, int status) const;
 

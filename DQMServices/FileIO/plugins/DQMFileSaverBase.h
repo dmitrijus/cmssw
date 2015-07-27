@@ -28,6 +28,23 @@ class DQMFileSaverBase
   ~DQMFileSaverBase();
 
  protected:
+
+  // file name components, in order
+  struct FileParameters {
+    std::string path_;  //
+    std::string producer_;  // DQM or Playback
+    int version_;
+    std::string tag_;
+    long run_;
+    long lumi_;
+    std::string child_;  // child of a fork
+
+    // other parameters
+    DQMStore::SaveReferenceTag saveReference_;
+    int saveReferenceQMin_;
+  };
+
+ protected:
   virtual void beginJob(void);
   virtual std::shared_ptr<NoCache> globalBeginRun(
       const edm::Run &, const edm::EventSetup &) const;
@@ -45,8 +62,10 @@ class DQMFileSaverBase
   // these two should be overwritten
   // in some cases, hsitograms are deleted after saving
   // so we need to call all file savers
-  virtual void saveLumi() const {};
-  virtual void saveRun() const {};
+  virtual void saveLumi(FileParameters fp) const {};
+  virtual void saveRun(FileParameters fp) const {};
+
+  static const std::string filename(FileParameters fp, bool useLumi = false);
 
   // also used by the JsonWritingTimedPoolOutputModule,
   // fms will be nullptr in such case
@@ -59,29 +78,12 @@ class DQMFileSaverBase
 
   // utilities
   void logFileAction(const std::string& msg, const std::string& fileName) const;
+  void saveJobReport(const std::string &filename) const;
 
- protected:
-  // file name components, in order
-  // lock should be acquired for r/w
-  struct FileParameters {
-    std::string path_;  //
-    std::string producer_;  // DQM or Playback
-    int version_;
-    std::string tag_;
-    long run_;
-    long lumi_;
-    std::string child_;  // child of a fork
+  // members
+  mutable std::mutex initial_fp_lock_;
+  FileParameters initial_fp_;
 
-    // other parameters
-    DQMStore::SaveReferenceTag saveReference_;
-    int saveReferenceQMin_;
-  };
-
-  // I have no clue why all framework methods are const.
-  mutable std::mutex lock_;
-  mutable FileParameters fp_;
-
-  virtual std::string filename(bool useLumi = false) const;
 
  public:
   static void fillDescription(edm::ParameterSetDescription& d);

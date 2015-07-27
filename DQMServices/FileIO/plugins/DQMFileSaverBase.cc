@@ -30,76 +30,58 @@
 using namespace dqm;
 
 DQMFileSaverBase::DQMFileSaverBase(const edm::ParameterSet &ps) {
-  std::unique_lock<std::mutex> lck(lock_);
+  FileParameters fp;
 
-  fp_.path_ = ps.getUntrackedParameter<std::string>("path");
-  fp_.producer_ = ps.getUntrackedParameter<std::string>("producer");
-  fp_.run_ = 0;
-  fp_.tag_ = ps.getUntrackedParameter<std::string>("tag");
-  fp_.lumi_ = 0;
-  fp_.version_ = 1;
-  fp_.child_ = "";
+  fp.path_ = ps.getUntrackedParameter<std::string>("path");
+  fp.producer_ = ps.getUntrackedParameter<std::string>("producer");
+  fp.run_ = 0;
+  fp.tag_ = ps.getUntrackedParameter<std::string>("tag");
+  fp.lumi_ = 0;
+  fp.version_ = 1;
+  fp.child_ = "";
 
-  //fp_.saveReference_ = DQMStore::SaveWithReference;
-
+  fp.saveReference_ = DQMStore::SaveWithReference;
   // Check how we should save the references.
-  //std::string refsave = ps.getUntrackedParameter<std::string>("referenceHandling", "all");
-  //if (refsave == "skip")
-  //{
-  //  fp_.saveReference_ = DQMStore::SaveWithoutReference;
-  //}
-  //else if (refsave == "all")
-  //{
-  //  fp_.saveReference_ = DQMStore::SaveWithReference;
-  //}
-  //else if (refsave == "qtests")
-  //{
-  //  fp_.saveReference_ = DQMStore::SaveWithReferenceForQTest;
-  //}
-  //else {
-  //  //edm::LogInfo("DQMFileSaverBase")
-  //  std::cerr
-  //    << "Invalid 'referenceHandling' parameter '" << refsave
-  //    << "'.  Expected 'skip', 'all' or 'qtests'.";
+  std::string refsave = ps.getUntrackedParameter<std::string>("referenceHandling", "all");
+  if (refsave == "skip")
+  {
+    fp.saveReference_ = DQMStore::SaveWithoutReference;
+  }
+  else if (refsave == "all")
+  {
+    fp.saveReference_ = DQMStore::SaveWithReference;
+  }
+  else if (refsave == "qtests")
+  {
+    fp.saveReference_ = DQMStore::SaveWithReferenceForQTest;
+  }
+  else {
+    //edm::LogInfo("DQMFileSaverBase")
+    std::cerr
+      << "Invalid 'referenceHandling' parameter '" << refsave
+      << "'.  Expected 'skip', 'all' or 'qtests'.";
 
-  //}
+  }
 
-  //// Check minimum required quality test result for which reference is saved.
-  //fp_.saveReferenceQMin_ = ps.getUntrackedParameter<int>("referenceRequireStatus", dqm::qstatus::STATUS_OK);
+  // Check minimum required quality test result for which reference is saved.
+  fp.saveReferenceQMin_ = ps.getUntrackedParameter<int>("referenceRequireStatus", dqm::qstatus::STATUS_OK);
+
+  std::unique_lock<std::mutex> lck(initial_fp_lock_);
+  initial_fp_ = fp;
 }
 
 DQMFileSaverBase::~DQMFileSaverBase() {}
-
-// void
-// DQMFileSaverBase::saveJobReport(const std::string &filename) const
-//{
-//
-//  // Report the file to job report service.
-//  edm::Service<edm::JobReport> jr;
-//  if (jr.isAvailable())
-//  {
-//    std::map<std::string, std::string> info;
-//    info["Source"] = "DQMStore";
-//    info["FileClass"] = "DQM";
-//    jr->reportAnalysisFile(filename, info);
-//  }
-//
-//}
 
 void DQMFileSaverBase::beginJob() {}
 
 std::shared_ptr<NoCache> DQMFileSaverBase::globalBeginRun(
     const edm::Run &r, const edm::EventSetup &) const {
-  std::unique_lock<std::mutex> lck(lock_);
-  fp_.run_ = r.id().run();
 
   return nullptr;
 }
 
 std::shared_ptr<NoCache> DQMFileSaverBase::globalBeginLuminosityBlock(
     const edm::LuminosityBlock &l, const edm::EventSetup &) const {
-  std::unique_lock<std::mutex> lck(lock_);
-  fp_.lumi_ = l.id().luminosityBlock();
 
   return nullptr;
 }
@@ -114,17 +96,31 @@ void DQMFileSaverBase::globalEndLuminosityBlock(const edm::LuminosityBlock &iLS,
   int ilumi    = iLS.id().luminosityBlock();
   int irun     = iLS.id().run();
 
+  std::unique_lock<std::mutex> lck(initial_fp_lock_);
+  FileParameters fp = initial_fp_;
+  lck.unlock();
+
+  fp.lumi_ = ilumi;
+  fp.run_ = irun;
+
   edm::Service<DQMStore> store;
 
-  this->saveLumi();
+  this->saveLumi(fp);
 
   store->markForDeletion(store->mtEnabled() ? irun : 0, ilumi);
 }
 
 void DQMFileSaverBase::globalEndRun(const edm::Run &iRun,
                                     const edm::EventSetup &) const {
+
+  std::unique_lock<std::mutex> lck(initial_fp_lock_);
+  FileParameters fp = initial_fp_;
+  lck.unlock();
+
+  fp.run_ = iRun.id().run();
+
   // empty
-  this->saveRun();
+  this->saveRun(fp);
 }
 
 void DQMFileSaverBase::endJob(void) {}
@@ -145,24 +141,24 @@ void DQMFileSaverBase::postForkReacquireResources(
   char buffer[digits + 2];
   snprintf(buffer, digits + 2, "_F%0*d", digits, childIndex);
 
-  std::unique_lock<std::mutex> lck(lock_);
-  fp_.child_ = std::string(buffer);
+  std::unique_lock<std::mutex> lck(initial_fp_lock_);
+  initial_fp_.child_ = std::string(buffer);
 }
 
-std::string DQMFileSaverBase::filename(bool useLumi) const {
+const std::string DQMFileSaverBase::filename(FileParameters fp, bool useLumi) {
   char buf[256];
   if (useLumi) {
-    snprintf(buf, 256, "%s_V%04d_%s_R%09ld_L%09ld%s", fp_.producer_.c_str(),
-             fp_.version_, fp_.tag_.c_str(), fp_.run_, fp_.lumi_,
-             fp_.child_.c_str());
+    snprintf(buf, 256, "%s_V%04d_%s_R%09ld_L%09ld%s", fp.producer_.c_str(),
+             fp.version_, fp.tag_.c_str(), fp.run_, fp.lumi_,
+             fp.child_.c_str());
   } else {
-    snprintf(buf, 256, "%s_V%04d_%s_R%09ld%s", fp_.producer_.c_str(), fp_.version_,
-             fp_.tag_.c_str(), fp_.run_, fp_.child_.c_str());
+    snprintf(buf, 256, "%s_V%04d_%s_R%09ld%s", fp.producer_.c_str(), fp.version_,
+             fp.tag_.c_str(), fp.run_, fp.child_.c_str());
   }
   buf[255] = 0;
 
   namespace fs = boost::filesystem;
-  fs::path path(fp_.path_);
+  fs::path path(fp.path_);
   fs::path file(buf);
 
   return (path / file).string();
@@ -174,7 +170,7 @@ DQMFileSaverBase::fillJson(int run, int lumi, const std::string& dataFilePathNam
 {
   namespace bpt = boost::property_tree;
   namespace bfs = boost::filesystem;
-  
+
   bpt::ptree pt;
 
   int hostnameReturn;
@@ -183,7 +179,7 @@ DQMFileSaverBase::fillJson(int run, int lumi, const std::string& dataFilePathNam
   if (hostnameReturn == -1)
     throw cms::Exception("fillJson")
           << "Internal error, cannot get host name";
-  
+
   int pid = getpid();
   std::ostringstream oss_pid;
   oss_pid << pid;
@@ -255,10 +251,24 @@ const std::string DQMFileSaverBase::fillOrigin(const std::string filename,
     for (int i = 0; i < MD5_DIGEST_LENGTH; ++i) {
       hash << std::hex << std::setfill('0') << std::setw(2) << (int)(md5[i]);
     }
-  
+
     std::ostringstream out;
     out << "md5:" << hash.str() << " " << fp.size() << " " << final_filename;
     return out.str();
+}
+
+void DQMFileSaverBase::saveJobReport(const std::string &filename) const
+{
+  // Report the file to job report service.
+  edm::Service<edm::JobReport> jr;
+  if (jr.isAvailable())
+  {
+    std::map<std::string, std::string> info;
+    info["Source"] = "DQMStore";
+    info["FileClass"] = "DQM";
+    jr->reportAnalysisFile(filename, info);
+  }
+
 }
 
 void DQMFileSaverBase::logFileAction(const std::string& msg, const std::string& fileName) const {

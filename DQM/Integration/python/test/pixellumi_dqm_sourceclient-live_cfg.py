@@ -38,21 +38,17 @@ process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
 # GLOBALTAG
 #----------
 # Condition for P5 cluster
-process.load("DQM.Integration.test.FrontierCondition_GT_cfi")
+process.load("DQM.Integration.config.FrontierCondition_GT_cfi")
 # Condition for lxplus
-#process.load("DQM.Integration.test.FrontierCondition_GT_Offline_cfi") 
-
-#----------------
-# DQM Environment
-#----------------
-process.load("DQMServices.Components.DQMEnvironment_cfi")
+#process.load("DQM.Integration.config.FrontierCondition_GT_Offline_cfi") 
 
 #-----------------------------------------------------------------------------
 # DQM Live Environment (for integration, replace with standard for deployment)
 #-----------------------------------------------------------------------------
-process.load("DQM.Integration.test.environment_cfi")
+process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder    = "PixelLumi"
-process.dqmSaver.dirName = '.'
+process.dqmSaver.tag = "PixelLumi"
+
 #------------------------
 #  Reconstruction Modules
 #------------------------
@@ -93,7 +89,8 @@ process.PixelLumiDqmZeroBias = pixel_lumi_dqm.clone(
     resetEveryNLumiSections=cms.untracked.int32(1),
     logFileName = cms.untracked.string("/nfshome0/dqmdev/pixel_lumi.txt")
     )
-if process.dqmSaver.producer.value() is "Playback":
+
+if process.dqmRunConfig.type.value() is "playback":
     process.PixelLumiDqmZeroBias.logFileName = cms.untracked.string("/nfshome0/dqmdev/pixel_lumi.txt")
 else:
     process.PixelLumiDqmZeroBias.logFileName = cms.untracked.string("/nfshome0/dqmpro/pixel_lumi.txt")
@@ -129,7 +126,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(100)
 #-------------
 # Input Source
 #-------------
-process.load("DQM.Integration.test.inputsource_cfi")
+process.load("DQM.Integration.config.inputsource_cfi")
 #process.DQMEventStreamHttpReader.consumerName = 'DQM Pixel Luminosity Consumer'
 #process.DQMEventStreamHttpReader.SelectHLTOutput = cms.untracked.string('hltOutputALCALUMIPIXELS')
 #process.DQMEventStreamHttpReader.maxEventRequestRate = cms.untracked.double(200.0)
@@ -185,7 +182,7 @@ process.schedule = cms.Schedule(process.raw2digi_step,
 
 
 ### process customizations included here
-from DQM.Integration.test.online_customizations_cfi import *
+from DQM.Integration.config.online_customizations_cfi import *
 process = customise(process)
 
 ######################################################################

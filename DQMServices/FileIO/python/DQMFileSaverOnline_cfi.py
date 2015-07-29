@@ -13,5 +13,8 @@ dqmSaver = cms.EDAnalyzer("DQMFileSaverOnline",
     # Control reference saving (default / skip / qtests / all)
     referenceHandling = cms.untracked.string('all'),
     # Control which references are saved for qtests (default: STATUS_OK)
-    referenceRequireStatus = cms.untracked.int32(100)
+    referenceRequireStatus = cms.untracked.int32(100),
+
+    # How often the backup file will be generated, in lumisections (-1 disables).
+    backupLumiCount = cms.untracked.int32(-1),
 )

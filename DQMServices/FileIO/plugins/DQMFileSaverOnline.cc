@@ -33,10 +33,12 @@ DQMFileSaverOnline::DQMFileSaverOnline(const edm::ParameterSet &ps)
 DQMFileSaverOnline::~DQMFileSaverOnline() {}
 
 void DQMFileSaverOnline::saveLumi(FileParameters fp) const {
-  if (fp.lumi_ % backupLumiCount_ == 0) {
-
-    // actual saving is done here
-    makeSnapshot(fp, false);
+  if (backupLumiCount_ > 0) {
+    if (fp.lumi_ % backupLumiCount_ == 0) {
+  
+      // actual saving is done here
+      makeSnapshot(fp, false);
+    }
   }
 }
 
@@ -139,7 +141,7 @@ void DQMFileSaverOnline::fillDescriptions(
   desc.setComment("Saves histograms from DQM store, online workflow.");
 
   desc.addUntracked<int>("backupLumiCount", 10)->setComment(
-      "How often the backup file will be generated, in lumisections.");
+      "How often the backup file will be generated, in lumisections (-1 disables).");
 
   DQMFileSaverBase::fillDescription(desc);
 

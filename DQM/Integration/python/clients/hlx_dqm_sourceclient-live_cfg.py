@@ -23,8 +23,7 @@ process.hlxdqmsource.SourcePort = 51010
 ## Set up env and saver
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder    = "HLX"
-
-process.dqmSaver.dirName = '.'
+process.dqmSaver.tag= "HLX"
 
 ## Lumi reference file
 process.DQMStore.referenceFileName = '/dqmdata/dqm/reference/hlx_reference.root'
@@ -40,10 +39,6 @@ process.hlxQualityTester = cms.EDAnalyzer("QualityTester",
 )
 
 process.p = cms.Path(process.hlxdqmsource*process.hlxQualityTester*process.dqmEnv*process.dqmSaver)
-
-## Shouldn't need this anymore ...
-##process.hlxdqmsource.outputDir = process.dqmSaver.dirName
-
 
 ### process customizations included here
 from DQM.Integration.config.online_customizations_cfi import *

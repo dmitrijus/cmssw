@@ -16,6 +16,8 @@ process.load("DQM.Integration.config.inputsource_cfi")
 #----------------------------
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder = 'Scal'
+process.dqmSaver.tag = 'Scal'
+
 #-----------------------------
 process.load("DQMServices.Components.DQMScalInfo_cfi")
 

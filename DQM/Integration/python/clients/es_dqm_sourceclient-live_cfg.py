@@ -39,9 +39,10 @@ process.preScaler.prescaleFactor = 1
 
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder = 'EcalPreshower'
+process.dqmSaver.tag = 'EcalPreshower'
 process.DQMStore.referenceFileName = '/dqmdata/dqm/reference/es_reference.root'
 # for local test
-process.dqmSaver.dirName = '.'
+#process.dqmSaver.path = '.'
 
 process.load("DQM/EcalPreshowerMonitorModule/EcalPreshowerMonitorTasks_cfi")
 process.ecalPreshowerIntegrityTask.ESDCCCollections = cms.InputTag("esRawToDigi")

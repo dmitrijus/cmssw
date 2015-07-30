@@ -47,7 +47,8 @@ process.load("DQM.Integration.config.FrontierCondition_GT_cfi")
 #-----------------------------------------------------------------------------
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder    = "PixelLumi"
-process.dqmSaver.dirName = '.'
+process.dqmSaver.tag = "PixelLumi"
+
 #------------------------
 #  Reconstruction Modules
 #------------------------
@@ -88,7 +89,8 @@ process.PixelLumiDqmZeroBias = pixel_lumi_dqm.clone(
     resetEveryNLumiSections=cms.untracked.int32(1),
     logFileName = cms.untracked.string("/nfshome0/dqmdev/pixel_lumi.txt")
     )
-if process.dqmSaver.producer.value() is "Playback":
+
+if process.dqmRunConfig.type.value() is "playback":
     process.PixelLumiDqmZeroBias.logFileName = cms.untracked.string("/nfshome0/dqmdev/pixel_lumi.txt")
 else:
     process.PixelLumiDqmZeroBias.logFileName = cms.untracked.string("/nfshome0/dqmpro/pixel_lumi.txt")

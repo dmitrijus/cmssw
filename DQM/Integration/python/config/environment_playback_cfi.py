@@ -15,10 +15,13 @@ DQM = cms.Service("DQM",
 DQMMonitoringService = cms.Service("DQMMonitoringService")
 
 from DQMServices.Components.DQMEventInfo_cfi import *
-from DQMServices.FileIO.DQMFileSaverOnline import *
+from DQMServices.FileIO.DQMFileSaverOnline_cfi import *
 
-dqmSaver.dirName = '.'
+dqmSaver.path = "/dqmdata/dqmintegration/upload"
 dqmSaver.tag = "PID%06d" % os.getpid()
-dqmSaver.producer = 'Playback'
+dqmSaver.producer = 'DQM'
+dqmSaver.backupLumiCount = 15
 
-dqmSystem = cms.untracked.string("playback")
+dqmRunConfig = cms.PSet(
+    type = cms.untracked.string("playback"),
+)

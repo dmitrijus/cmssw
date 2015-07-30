@@ -23,8 +23,8 @@ process.load("DQM.Integration.config.inputsource_cfi")
 # DQM Environment
  
 process.load("DQM.Integration.config.environment_cfi")
-process.dqmSaver.dirName = '.'
 process.dqmEnv.subSystemFolder = 'L1T'
+process.dqmSaver.tag = 'L1T'
 
 #
 # references needed
@@ -156,14 +156,6 @@ process.l1tMonitorOnline.remove(process.l1tRate)
 
 #
 process.schedule.remove(process.l1tSyncPath)
-
-# 
-# un-comment next lines in case you use the file for private tests on the playback server
-# see https://twiki.cern.ch/twiki/bin/view/CMS/DQMTest for instructions
-#
-#process.dqmSaver.dirName = '.'
-#process.dqmSaver.saveByRun = 1
-#process.dqmSaver.saveAtJobEnd = True
 
 #--------------------------------------------------
 # Heavy Ion Specific Fed Raw Data Collection Label

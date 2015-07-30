@@ -29,8 +29,7 @@ process.hltTriggerTypeFilter = cms.EDFilter("HLTTriggerTypeFilter",
 #-----------------------------
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder = 'BeamMonitor'
-# uncomment for running local test
-#process.dqmSaver.dirName     = '.'
+process.dqmSaver.tag = 'BeamMonitor'
 
 process.dqmEnvPixelLess = process.dqmEnv.clone()
 process.dqmEnvPixelLess.subSystemFolder = 'BeamMonitor_PixelLess'
@@ -64,7 +63,7 @@ process.load("DQM.Integration.config.FrontierCondition_GT_cfi")
 #process.load("DQM.Integration.config.FrontierCondition_GT_Offline_cfi") 
 
 # Change Beam Monitor variables
-if process.dqmSaver.producer.value() is "Playback":
+if process.dqmRunConfig.type.value() is "playback":
   process.dqmBeamMonitor.BeamFitter.WriteAscii = False
   process.dqmBeamMonitor.BeamFitter.AsciiFileName = '/nfshome0/yumiceva/BeamMonitorDQM/BeamFitResults.txt'
   process.dqmBeamMonitor.BeamFitter.WriteDIPAscii = True

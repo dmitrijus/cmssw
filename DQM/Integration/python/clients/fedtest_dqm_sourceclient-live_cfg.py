@@ -21,7 +21,8 @@ process.load("DQMServices.Core.DQM_cfg")
 #----------------------------
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder = 'FEDTest'
-process.dqmSaver.dirName = '.'
+process.dqmSaver.tag = 'FEDTest'
+# process.dqmSaver.path = '.'
 #-----------------------------
 
 

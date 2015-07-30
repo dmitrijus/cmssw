@@ -13,9 +13,15 @@ process.load("DQM.Integration.config.pbsource_cfi")
 #----------------------------
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder = 'HLTpb'
-process.dqmEnv.eventInfoFolder = 'EventInfo/Random'
-process.dqmSaver.dirName = './HLT'
+process.dqmEnv.eventInfoFolder = 'EventInfo'
+process.dqmSaver.tag = 'HLTpb'
+#process.dqmSaver.path = './HLT'
 #-----------------------------
+
+# customise for playback
+if process.dqmRunConfig.type.value() is "playback":
+    process.dqmEnv.eventInfoFolder = 'EventInfo/Random'
+
 
 # DQM Modules
 # FastTimerService client

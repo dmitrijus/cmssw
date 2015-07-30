@@ -16,6 +16,7 @@ process.load("DQM.Integration.config.inputsource_cfi")
 #----------------------------
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder = 'Info'
+process.dqmSaver.tag = 'Info'
 #-----------------------------
 process.load("DQMServices.Components.DQMProvInfo_cfi")
 

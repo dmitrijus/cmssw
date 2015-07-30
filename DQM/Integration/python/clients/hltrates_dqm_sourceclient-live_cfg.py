@@ -5,6 +5,8 @@ process.options = cms.untracked.PSet(
   SkipEvent = cms.untracked.vstring('ProductNotFound') 
 )
 
+process.load("DQMServices.Core.DQM_cfg")
+
 #### leave the following few lines uncommented for online running
 process.load("DQM.Integration.config.inputsource_cfi")
 process.load("DQM.Integration.config.environment_cfi")
@@ -29,19 +31,11 @@ process.load("DQM.Integration.config.environment_cfi")
 # old, not used
 #process.DQMEventStreamHttpReader.sourceURL = cms.string('http://srv-c2c07-13.cms:11100/urn:xdaq-application:lid=50')
 
-
-process.load("DQMServices.Core.DQM_cfg")
-
 # old, not used
 #process.DQMStore.referenceFileName = "/dqmdata/dqm/reference/hlt_reference.root"
 
-###  remove for online running
-#process.dqmSaver.dirName = '.'
-###  end remove section 
+process.dqmSaver.tag = "HLTRates"
 
-process.dqmSaver.version = 2
-process.dqmSaver.saveByRun = 1
-process.dqmSaver.saveByLumiSection = -1
 #process.load("Configuration.StandardSequences.GeometryPilot2_cff")
 #process.load("Configuration.StandardSequences.MagneticField_cff")
 #process.GlobalTrackingGeometryESProducer = cms.ESProducer( "GlobalTrackingGeometryESProducer" ) # for muon hlt dqm

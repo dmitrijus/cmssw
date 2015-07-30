@@ -39,7 +39,7 @@ process.GlobalTag.RefreshEachRun = cms.untracked.bool(True)
 ############## DQM Enviroment ###################
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder = 'RPC'
-process.dqmSaver.dirName = '.'
+process.dqmSaver.tag = 'RPC'
 
 process.DQMStore.referenceFileName = '/dqmdata/dqm/reference/rpc_reference.root'
 

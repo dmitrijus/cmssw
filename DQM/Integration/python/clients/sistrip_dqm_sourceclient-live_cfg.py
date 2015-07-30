@@ -39,10 +39,8 @@ process.load("DQM.Integration.config.environment_cfi")
 process.DQM.filter = '^(SiStrip|Tracking)(/[^/]+){0,5}$'
 
 process.dqmEnv.subSystemFolder    = "SiStrip"
-process.dqmSaver.saveByLumiSection = 30
-
-# uncomment for running in local
-process.dqmSaver.dirName     = '.'
+process.dqmSaver.tag = "SiStrip"
+process.dqmSaver.backupLumiCount = 30
 
 process.dqmEnvTr = cms.EDAnalyzer("DQMEventInfo",
                  subSystemFolder = cms.untracked.string('Tracking'),

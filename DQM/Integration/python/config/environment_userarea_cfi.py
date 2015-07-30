@@ -23,4 +23,6 @@ dqmSaver.saveByLumiSection = 10
 dqmSaver.saveByRun = 1
 dqmSaver.saveAtJobEnd = False
 
-dqmSystem = cms.untracked.string("userarea")
+dqmRunConfig = cms.PSet(
+    type = cms.untracked.string("userarea"),
+)

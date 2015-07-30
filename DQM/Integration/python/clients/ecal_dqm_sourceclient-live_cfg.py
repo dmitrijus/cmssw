@@ -137,8 +137,7 @@ process.preScaler.prescaleFactor = 1
 process.DQMStore.referenceFileName = "/dqmdata/dqm/reference/ecal_reference.root"
 
 process.dqmEnv.subSystemFolder = cms.untracked.string('Ecal')
-
-process.dqmSaver.convention = cms.untracked.string('Online')
+process.dqmSaver.tag = cms.untracked.string('Ecal')
 
 process.simEcalTriggerPrimitiveDigis.InstanceEB = "ebDigis"
 process.simEcalTriggerPrimitiveDigis.InstanceEE = "eeDigis"

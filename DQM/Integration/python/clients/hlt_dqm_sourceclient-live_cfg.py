@@ -11,7 +11,9 @@ process.load("DQM.Integration.config.inputsource_cfi")
 
 process.load("DQM.Integration.config.environment_cfi")
 process.DQMStore.referenceFileName = "/dqmdata/dqm/reference/hlt_reference.root"
-#process.dqmSaver.dirName = '.'
+
+process.dqmEnv.subSystemFolder = 'HLT'
+process.dqmSaver.tag = 'HLT'
 
 process.load("Configuration.StandardSequences.GeometryPilot2_cff")
 process.load("Configuration.StandardSequences.MagneticField_cff")
@@ -34,9 +36,7 @@ process.hltSeedL1Logic.dqmFolder =    cms.untracked.string("HLT/HLTSeedL1LogicSc
 #process.p = cms.EndPath(process.hlts+process.hltsClient)
 process.p = cms.EndPath(process.hltSeedL1Logic)
 
-
 process.pp = cms.Path(process.dqmEnv+process.dqmSaver)
-process.dqmEnv.subSystemFolder = 'HLT'
 #process.hltResults.plotAll = True
 
 

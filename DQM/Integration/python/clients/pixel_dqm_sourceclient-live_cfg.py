@@ -33,8 +33,7 @@ process.load("DQMServices.Components.DQMEnvironment_cfi")
 #-----------------------------
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder    = "Pixel"
-# for local running
-process.dqmSaver.dirName = '.'
+process.dqmSaver.tag = "Pixel"
 
 process.DQMStore.referenceFileName = '/dqmdata/dqm/reference/pixel_reference_pp.root'
 if (process.runType.getRunType() == process.runType.hi_run):

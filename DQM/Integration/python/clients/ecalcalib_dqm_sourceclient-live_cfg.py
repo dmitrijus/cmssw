@@ -161,7 +161,6 @@ process.DQMStore.referenceFileName = "/dqmdata/dqm/reference/ecalcalib_reference
 process.ecalPedestalMonitorTask.verbosity = 0
 process.ecalPedestalMonitorTask.commonParameters.onlineMode = True
 
-process.dqmSaver.convention = cms.untracked.string('Online')
 
 process.ecalLaserLedMonitorTask.verbosity = 0
 process.ecalLaserLedMonitorTask.collectionTags.EBLaserLedUncalibRecHit = "ecalLaserLedUncalibRecHit:EcalUncalibRecHitsEB"
@@ -189,6 +188,7 @@ process.ecalPNDiodeMonitorTask.verbosity = 0
 process.ecalPNDiodeMonitorTask.commonParameters.onlineMode = True
 
 process.dqmEnv.subSystemFolder = cms.untracked.string('EcalCalibration')
+process.dqmSaver.tag = cms.untracked.string('EcalCalibration')
 
 ### Sequences ###
 

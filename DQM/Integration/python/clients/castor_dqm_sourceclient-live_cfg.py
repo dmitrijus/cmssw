@@ -19,6 +19,7 @@ process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
 
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder = "Castor"
+process.dqmSaver.tag = "Castor"
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 
@@ -279,14 +280,6 @@ process.castorMonitor = cms.EDAnalyzer("CastorMonitorModule",
        LastSignalBin = cms.untracked.int32(9),
        LED_ADC_Thresh = cms.untracked.double(-1000.0)
 )
-
-### the filename prefix 
-#process.dqmSaver.producer = 'DQM'
-#process.dqmSaver.dirName = '/tmp/'
-#process.dqmSaver.convention = 'Online'
-#process.dqmSaver.saveByRun = True
-# for local test
-process.dqmSaver.dirName = '.'
 
 #-----------------------------
 # Scheduling

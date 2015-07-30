@@ -20,7 +20,8 @@ process.load("DQM.Integration.config.inputsource_cfi")
 #----------------------------
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder = 'FED'
-process.dqmSaver.dirName = '.'
+process.dqmSaver.tag = 'FED'
+# process.dqmSaver.path= '.'
 
 process.load("DQM.TrigXMonitorClient.HLTScalersClient_cfi")
 process.load("DQM.TrigXMonitorClient.L1TScalersClient_cfi")

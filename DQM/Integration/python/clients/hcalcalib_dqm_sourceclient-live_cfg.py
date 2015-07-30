@@ -11,8 +11,9 @@ subsystem="HcalCalib"
 #-----------------------------
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder = subsystem
+process.dqmSaver.tag = subsystem
+# process.dqmSaver.path= "."
 process.DQMStore.referenceFileName = '/dqmdata/dqm/reference/hcal_reference.root'
-process.dqmSaver.dirName = "."
 
 print "Running with run type = ", process.runType.getRunType()
 

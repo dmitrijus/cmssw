@@ -21,6 +21,7 @@ process.hltTriggerTypeFilter = cms.EDFilter("HLTTriggerTypeFilter",SelectedTrigg
 #----------------------------
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder = "BeamPixel"
+process.dqmSaver.tag = "BeamPixel"
 
 
 #----------------------------

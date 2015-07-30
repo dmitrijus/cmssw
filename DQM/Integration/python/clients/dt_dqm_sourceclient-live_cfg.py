@@ -22,7 +22,7 @@ process.DQMStore.referenceFileName = '/dqmdata/dqm/reference/dt_reference.root'
 #### DQM Live Environment
 #----------------------------
 process.dqmEnv.subSystemFolder = 'DT'
-process.dqmSaver.dirName = "."
+process.dqmSaver.tag = "DT"
 #-----------------------------
 
 

@@ -21,6 +21,7 @@ process.load("DQM.Integration.config.inputsource_cfi")
 #-----------------------------
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder = subsystem
+process.dqmSaver.tag = subsystem
 process.DQMStore.referenceFileName = '/dqmdata/dqm/reference/hcal_reference.root'
 
 print "Running with run type = ", process.runType.getRunType()

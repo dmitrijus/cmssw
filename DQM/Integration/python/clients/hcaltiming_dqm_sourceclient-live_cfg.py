@@ -50,12 +50,9 @@ process.DQMStore.verbose = 0
 ### use it for dqmEnv, dqmSaver
 process.load("DQM.Integration.config.environment_cfi")
 ### path where to save the output file
-#process.dqmSaver.dirName = '.'
-### the filename prefix
-#process.dqmSaver.producer = 'DQM'
-### possible conventions are "Online", "Offline" and "RelVal"
-#process.dqmSaver.convention = 'Online'
+#process.dqmSaver.path = '.'
 process.dqmEnv.subSystemFolder = 'HcalTiming'
+process.dqmSaver.tag = 'HcalTiming'
 
 process.p = cms.Path(process.hcalDigis*process.l1GtUnpack*process.hcalTimingMonitor*process.dqmEnv*process.dqmSaver)
 

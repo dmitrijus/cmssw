@@ -28,7 +28,7 @@ process.load("DQM.Integration.config.inputsource_cfi")
 process.load("DQM.Integration.config.environment_cfi")
 # for local test
 process.dqmEnv.subSystemFolder = 'L1TEMU'
-process.dqmSaver.dirName = '.'
+process.dqmSaver.tag = 'L1TEMU'
 #
 # no references needed
 # replace DQMStore.referenceFileName = "L1TEMU_reference.root"
@@ -163,13 +163,6 @@ process.L1HardwareValidation.remove(process.deDt)
 # turn on verbosity in L1TEMUEventInfoClient
 #
 # process.l1EmulatorEventInfoClient.verbose = cms.untracked.bool(True)
-
-# un-comment next lines in case you use the file for private tests on the playback server
-# see https://twiki.cern.ch/twiki/bin/view/CMS/DQMTest for instructions
-#
-#process.dqmSaver.dirName = '.'
-#process.dqmSaver.saveByRun = 1
-#process.dqmSaver.saveAtJobEnd = True
 
 print "Running with run type = ", process.runType.getRunType()
 process.castorDigis.InputLabel = cms.InputTag("rawDataCollector")

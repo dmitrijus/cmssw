@@ -20,8 +20,7 @@ process.load("DQM.Integration.config.inputsource_cfi")
 
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder = 'Physics'
-# for local test
-process.dqmSaver.dirName = '.'
+process.dqmSaver.tag = 'Physics'
 
 # 0=random, 1=physics, 2=calibration, 3=technical
 process.hltTriggerTypeFilter = cms.EDFilter("HLTTriggerTypeFilter",

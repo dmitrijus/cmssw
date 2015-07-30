@@ -33,7 +33,7 @@ process.load("DQM.Integration.config.FrontierCondition_GT_Offline_cfi")
 #-----------------------------
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder    = "SiStripLAS"
-process.dqmSaver.dirName = '.'
+process.dqmSaver.tag = "SiStripLAS"
 #----------------------------
 # DQM Alignment Software
 #----------------------------

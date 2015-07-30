@@ -53,12 +53,12 @@ process.load("DQM.Integration.config.inputsource_cfi")
 
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder    = "CSC"
+process.dqmSaver.tag = "CSC"
 
 process.DQMStore.referenceFileName = '/dqmdata/dqm/reference/csc_reference.root'
 
 #process.DQM.collectorHost = 'pccmsdqm02.cern.ch'
 #process.DQM.collectorHost = 'localhost'
-process.dqmSaver.dirName = '.'
 
 #-----------------------------
 # Magnetic Field

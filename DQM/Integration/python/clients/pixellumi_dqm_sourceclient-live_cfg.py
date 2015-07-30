@@ -47,7 +47,8 @@ process.load("DQM.Integration.config.FrontierCondition_GT_cfi")
 #-----------------------------------------------------------------------------
 process.load("DQM.Integration.config.environment_cfi")
 process.dqmEnv.subSystemFolder    = "PixelLumi"
-process.dqmSaver.dirName = '.'
+process.dqmSaver.tag = "PixelLumi"
+
 #------------------------
 #  Reconstruction Modules
 #------------------------

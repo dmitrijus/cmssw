@@ -51,7 +51,6 @@ using namespace edm;
 // # Fit variables #
 // #################
 #define DIM 3
-double Gauss3DFunc(const double* par);
 typedef struct
 {
   double x;
@@ -59,18 +58,6 @@ typedef struct
   double z;
   double Covariance[DIM][DIM];
 } VertexType;
-vector<VertexType> Vertices;
-bool considerVxCovariance;
-unsigned int counterVx; // Counts the number of vertices taken into account for the fit
-double maxTransRadius;  // Max transverse radius in which the vertices must be [cm]
-double maxLongLength;   // Max longitudinal length in which the vertices must be [cm]
-double xPos,yPos,zPos;  // x,y,z approximate positions of the beam spot
-double pi;
-// ######################
-// # cfg file parameter #
-// ######################
-double VxErrCorr;       // Coefficient to compensate the under-estimation of the vertex errors
-
 
 class Vx3DHLTAnalyzer : public EDAnalyzer {
    public:
@@ -170,6 +157,22 @@ class Vx3DHLTAnalyzer : public EDAnalyzer {
       unsigned int lastLumiOfFit;
       double minVxDoF;
       bool internalDebug;
+
+
+      // previously global variables
+      vector<VertexType> Vertices;
+      bool considerVxCovariance;
+      unsigned int counterVx; // Counts the number of vertices taken into account for the fit
+      double maxTransRadius;  // Max transverse radius in which the vertices must be [cm]
+      double maxLongLength;   // Max longitudinal length in which the vertices must be [cm]
+      double xPos,yPos,zPos;  // x,y,z approximate positions of the beam spot
+      double pi;
+      // ######################
+      // # cfg file parameter #
+      // ######################
+      double VxErrCorr;       // Coefficient to compensate the under-estimation of the vertex errors
+
+      double Gauss3DFunc(const double* par);
 };
 
 #endif

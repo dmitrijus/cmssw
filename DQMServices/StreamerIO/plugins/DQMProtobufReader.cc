@@ -113,10 +113,15 @@ void DQMProtobufReader::readLuminosityBlock_(
 
   fiterator_.logFileAction("Initiating request to open file ", p);
   fiterator_.logFileAction("Successfully opened file ", p);
-  store->load(p);
+  loadDataFile(p);
   fiterator_.logFileAction("Closed file ", p);
 
   fiterator_.logLumiState(currentLumi_, "closed: ok");
+};
+
+void DQMProtobufReader::loadDataFile(const std::string& path) {
+  edm::Service<DQMStore> store;
+  store->load(path);
 };
 
 void DQMProtobufReader::readEvent_(edm::EventPrincipal&){};

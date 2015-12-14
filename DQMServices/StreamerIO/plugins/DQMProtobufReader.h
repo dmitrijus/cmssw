@@ -19,6 +19,10 @@ class DQMProtobufReader : public edm::InputSource {
   ~DQMProtobufReader();
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
+ protected:
+  // override this in sub classes, ie BRIL source
+  virtual void loadDataFile(const std::string& path);
+
  private:
   virtual edm::InputSource::ItemType getNextItemType() override;
   virtual std::shared_ptr<edm::RunAuxiliary> readRunAuxiliary_() override;

@@ -72,3 +72,20 @@ DEFINE_FWK_MODULE(L1TdeCSCTF);
 
 //#include "DQM/L1TMonitor/interface/L1GtHwValidation.h"
 //DEFINE_FWK_MODULE(L1GtHwValidation);
+//
+//
+
+#include "DQM/L1TMonitor/interface/L1TSync.h"
+DEFINE_FWK_MODULE(L1TSync);
+
+#include "DQM/L1TMonitor/interface/L1TRate.h"
+DEFINE_FWK_MODULE(L1TRate);
+
+#include "DQM/L1TMonitor/interface/L1TBPTX.h"
+DEFINE_FWK_MODULE(L1TBPTX);
+
+#include "DQM/L1TMonitor/interface/L1GtHwValidation.h"
+DEFINE_FWK_MODULE( L1GtHwValidation);
+
+#include "DQM/L1TMonitor/interface/L1ExtraDQM.h"
+DEFINE_FWK_MODULE(L1ExtraDQM);

@@ -113,8 +113,8 @@ void DQMProtobufReader::beginLuminosityBlock(edm::LuminosityBlock& lb) {
   }
 
   // load the new file
-  std::string path = fiterator_.make_path(currentLumi_.datafn);
-  std::string jspath = fiterator_.make_path(currentLumi_.filename);
+  std::string path = currentLumi_.get_data_path();
+  std::string jspath = currentLumi_.get_json_path();
 
   std::auto_ptr<std::string> path_product(new std::string(path));
   std::auto_ptr<std::string> json_product(new std::string(jspath));

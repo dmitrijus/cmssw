@@ -190,6 +190,9 @@ std::time_t DQMFileIterator::mtimeHash() const {
   std::time_t mtime_now = 0;
   
   for (auto path : runPath_) {
+    if (!boost::filesystem::exists(path))
+      continue;
+
     mtime_now = mtime_now ^ boost::filesystem::last_write_time(path);
   }
 
@@ -229,6 +232,12 @@ void DQMFileIterator::collect(bool ignoreTimers) {
   std::string fn_eor;
 
   for (auto runPath : runPath_) {
+    if (!boost::filesystem::exists(runPath)) {
+      logFileAction("Directory does not exist: ", runPath);
+
+      continue;
+    }
+
     directory_iterator dend;
     for (directory_iterator di(runPath); di != dend; ++di) {
       const boost::regex fn_re("run(\\d+)_ls(\\d+)_([a-zA-Z0-9]+)(_.*)?\\.jsn");

@@ -122,21 +122,21 @@ void DQMProtobufReader::beginLuminosityBlock(edm::LuminosityBlock& lb) {
   lb.put(path_product, "sourceDataPath");
   lb.put(json_product, "sourceJsonPath");
 
-  if (!boost::filesystem::exists(path)) {
-    fiterator_.logFileAction("Data file is missing ", path);
-    fiterator_.logLumiState(currentLumi_, "error: data file missing");
-    return;
-  }
-
   if (flagLoadFiles_) {
+    if (!boost::filesystem::exists(path)) {
+      fiterator_.logFileAction("Data file is missing ", path);
+      fiterator_.logLumiState(currentLumi_, "error: data file missing");
+      return;
+    }
+
     fiterator_.logFileAction("Initiating request to open file ", path);
     fiterator_.logFileAction("Successfully opened file ", path);
     store->load(path);
     fiterator_.logFileAction("Closed file ", path);
-    fiterator_.logLumiState(currentLumi_, "closed: ok");
+    fiterator_.logLumiState(currentLumi_, "close: ok");
   } else {
     fiterator_.logFileAction("Not loading the data file at source level ", path);
-    fiterator_.logLumiState(currentLumi_, "closed: skipped");
+    fiterator_.logLumiState(currentLumi_, "close: not loading");
   }
 }
 

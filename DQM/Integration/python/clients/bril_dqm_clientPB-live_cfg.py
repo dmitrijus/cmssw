@@ -20,10 +20,14 @@ process.dqmEnv.eventInfoFolder = 'EventInfo'
 process.dqmSaver.tag = 'BRIL'
 #-----------------------------
 
-# customise for playback
-if process.dqmRunConfig.type.value() is "playback":
-    process.dqmEnv.eventInfoFolder = 'EventInfo/Random'
+if process.dqmRunConfig.type.value() == "production":
+    rid = process.source.runInputDir.value()
+    process.source.runInputDir = rid + ":" + "/cmsnfsscratch/globalscratch/cmsbril/PLT/DQM/"
+    
+    print "Modified input source:", process.source
 
+# remove EventInfo
+process.dqmEnv.eventInfoFolder = 'EventInfo/Random'
 
 process.BrilClient = cms.EDAnalyzer("BrilClient")
 

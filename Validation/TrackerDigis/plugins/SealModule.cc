@@ -1,7 +1,8 @@
 #include "FWCore/PluginManager/interface/ModuleDef.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
-#include "Validation/TrackerDigis/interface/SiPixelDigiValid.h"
-#include "Validation/TrackerDigis/interface/SiStripDigiValid.h"
+
+#include "SiPixelDigiValid.h"
+#include "SiStripDigiValid.h"
 
 
 DEFINE_FWK_MODULE(SiPixelDigiValid);

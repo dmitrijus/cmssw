@@ -1,4 +1,5 @@
-#include "Validation/TrackerDigis/interface/SiStripDigiValid.h"
+#include "SiStripDigiValid.h"
+
 #include "DataFormats/Common/interface/DetSetVector.h"
 #include "DataFormats/GeometryVector/interface/GlobalPoint.h"
 #include "DataFormats/GeometryVector/interface/LocalPoint.h"

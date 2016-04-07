@@ -1,4 +1,5 @@
-#include "Validation/TrackerDigis/interface/SiPixelDigiValid.h"
+#include "SiPixelDigiValid.h"
+
 #include "DataFormats/Common/interface/DetSetVector.h"
 #include "DataFormats/SiPixelDigi/interface/PixelDigi.h"
 #include "DataFormats/SiPixelDetId/interface/PixelSubdetector.h"

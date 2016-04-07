@@ -297,25 +297,14 @@ void SiPixelDigiValid::analyze(const edm::Event& e, const edm::EventSetup& c){
     ndigiperRingLayer3[i] = 0;
  }
 
-int ndigiZpDisk1PerPanel1[24];
-int ndigiZpDisk1PerPanel2[24];
-int ndigiZpDisk2PerPanel1[24];
-int ndigiZpDisk2PerPanel2[24];
-int ndigiZmDisk1PerPanel1[24];
-int ndigiZmDisk1PerPanel2[24];
-int ndigiZmDisk2PerPanel1[24];
-int ndigiZmDisk2PerPanel2[24];
-
-for ( int i =0 ; i< 24; i++) {
-   ndigiZpDisk1PerPanel1[i] = 0;
-   ndigiZpDisk1PerPanel2[i] = 0;
-   ndigiZpDisk2PerPanel1[i] = 0;
-   ndigiZpDisk2PerPanel2[i] = 0;
-   ndigiZmDisk1PerPanel1[i] = 0;
-   ndigiZmDisk1PerPanel2[i] = 0;
-   ndigiZmDisk2PerPanel1[i] = 0;
-   ndigiZmDisk2PerPanel2[i] = 0;
-}
+std::vector<int> ndigiZpDisk1PerPanel1(24, 0);
+std::vector<int> ndigiZpDisk1PerPanel2(24, 0);
+std::vector<int> ndigiZpDisk2PerPanel1(24, 0);
+std::vector<int> ndigiZpDisk2PerPanel2(24, 0);
+std::vector<int> ndigiZmDisk1PerPanel1(24, 0);
+std::vector<int> ndigiZmDisk1PerPanel2(24, 0);
+std::vector<int> ndigiZmDisk2PerPanel1(24, 0);
+std::vector<int> ndigiZmDisk2PerPanel2(24, 0);
 
 int ndigilayer1ladders[20];
 int ndigilayer2ladders[32];
@@ -519,6 +508,20 @@ for ( int i =0 ; i< 44; i++) {
            unsigned int panel = tTopo->pxfPanel(id);
            unsigned int mod   = tTopo->pxfModule(id);
            //LogInfo("SiPixelDigiValid")<<"EndcaP="<<side<<" Disk="<<disk<<" Blade="<<blade<<" Panel="<<panel<<" Module="<<mod;
+           
+           assert(blade > 0);
+          
+           if (blade > ndigiZpDisk1PerPanel1.size()) {
+             ndigiZpDisk1PerPanel1.resize(blade, 0);
+             ndigiZpDisk1PerPanel2.resize(blade, 0);
+             ndigiZpDisk2PerPanel1.resize(blade, 0);
+             ndigiZpDisk2PerPanel2.resize(blade, 0);
+             ndigiZmDisk1PerPanel1.resize(blade, 0);
+             ndigiZmDisk1PerPanel2.resize(blade, 0);
+             ndigiZmDisk2PerPanel1.resize(blade, 0);
+             ndigiZmDisk2PerPanel2.resize(blade, 0);
+           }
+
            for ( iter = begin ; iter != end; iter++ ) {
              if(side == 1 && disk == 1 && panel ==1 ){
                      if ( mod == 1 ) {
@@ -722,7 +725,7 @@ for ( int i =0 ; i< 44; i++) {
     meDigiMultiLayer3Ring7_->Fill(ndigiperRingLayer3[6]);
     meDigiMultiLayer3Ring8_->Fill(ndigiperRingLayer3[7]);
 
-    for(int i =0; i< 24; i++) {
+    for (size_t i = 0; i < (ndigiZpDisk1PerPanel1.size()); i++) {
          meNdigiZmDisk1PerPanel1_->Fill(ndigiZmDisk1PerPanel1[i]);
          meNdigiZmDisk1PerPanel2_->Fill(ndigiZmDisk1PerPanel2[i]);
          meNdigiZmDisk2PerPanel1_->Fill(ndigiZmDisk2PerPanel1[i]);

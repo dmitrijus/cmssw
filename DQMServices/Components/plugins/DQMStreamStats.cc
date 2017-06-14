@@ -2,10 +2,11 @@
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
 
-#include "FWCore/Framework/interface/MakerMacros.h"
 
 #include <chrono>
 #include <ctime>
+
+#include <boost/regex.hpp>
 
 namespace dqmservices {
 
@@ -16,7 +17,7 @@ DQMStreamStats::DQMStreamStats(edm::ParameterSet const & iConfig)
     dirName_ ("."),
     fileBaseName_ (""),
     dumpOnEndLumi_(iConfig.getUntrackedParameter<bool>("dumpOnEndLumi", false)),
-    dumpOnEndRun_(iConfig.getUntrackedParameter<bool>("dumpOnEndRun", false))
+    dumpOnEndJob_(iConfig.getUntrackedParameter<bool>("dumpOnEndJob", false))
     {}
 
 DQMStreamStats::~DQMStreamStats() {}
@@ -269,7 +270,7 @@ void DQMStreamStats::dqmEndLuminosityBlock(DQMStore::IBooker &,
     int irun     = iLS.id().run();
     int ilumi    = iLS.id().luminosityBlock();
     char suffix[64];
-    sprintf(suffix, "R%09dLS%09d", irun, ilumi);
+    sprintf(suffix, "R%09d_LS%09d", irun, ilumi);
     workflow_ = "Default";
     dirName_ = getStepName();
     fileBaseName_ = dirName_ + "_" + producer_;// + version;
@@ -278,40 +279,26 @@ void DQMStreamStats::dqmEndLuminosityBlock(DQMStore::IBooker &,
   }
 }
 
-void DQMStreamStats::dqmEndRun(DQMStore::IBooker &, 
-                            DQMStore::IGetter &iGetter,
-                            edm::Run const &iRun, 
-                            edm::EventSetup const&) {
-  if (dumpOnEndRun_){
+
+void DQMStreamStats::dqmEndJob(DQMStore::IBooker &iBooker,
+                 DQMStore::IGetter &iGetter) {
+
+  if (dumpOnEndJob_){
     HistoStats st = collect(iGetter);
-    int irun     = iRun.run();
     char suffix[64];
-    sprintf(suffix, "R%09d", irun);
-    workflow_ = "Default";
-    dirName_ = getStepName();
-    fileBaseName_ = dirName_ + "_" + producer_;// + version;
-    std::string fileName = onlineOfflineFileName(fileBaseName_, std::string(suffix), workflow_, child_);
+    sprintf(suffix, "DQM_STATS_ENDJOB.json");
+
+    std::string fileName = suffix;
     writeMemoryJson(fileName, st);
   }
 }
-
-#if 0
-std::unique_ptr<Stats> DQMStreamStats::initializeGlobalCache(edm::ParameterSet const&) {
-  return std::unique_ptr<Stats>(new Stats());
-}
-
-void DQMStreamStats::analyze(edm::Event const&, edm::EventSetup const&) {
-//This can safely be updated from multiple Streams because we are using an std::atomic
-//      ++(globalCache()->value);
-}
-
-void DQMStreamStats::globalEndJob(Stats const* iStats) {
-  //std::cout <<"Number of events seen "<<iCount->value<<std::endl;
-}
-#endif
-
-DEFINE_FWK_MODULE(DQMStreamStats);
 
 }  // end of namespace
+
+#include "FWCore/Framework/interface/MakerMacros.h"
+typedef dqmservices::DQMStreamStats DQMStreamStats;
+DEFINE_FWK_MODULE(DQMStreamStats);
+
+
 
 

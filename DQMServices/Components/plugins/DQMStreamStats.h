@@ -71,20 +71,12 @@ class DQMStreamStats : public DQMEDHarvester {
 
   virtual ~DQMStreamStats();
 
-  // static std::unique_ptr<Stats> initializeGlobalCache(edm::ParameterSet
-  // const&);
-  // static void globalEndJob(Stats const* iStats);
-  // virtual void analyze(edm::Event const&, edm::EventSetup const&) override;
   void dqmEndLuminosityBlock(DQMStore::IBooker &, DQMStore::IGetter &,
                              edm::LuminosityBlock const &,
                              edm::EventSetup const &) override;
 
   void dqmEndJob(DQMStore::IBooker &iBooker,
-                 DQMStore::IGetter &iGetter) override{};
-
-  void dqmEndRun(DQMStore::IBooker &, DQMStore::IGetter &,
-              edm::Run const&, 
-              edm::EventSetup const&) override;
+                 DQMStore::IGetter &iGetter) override;
 
   // analyze a single monitor element
   HistoEntry analyze(MonitorElement *m);
@@ -106,12 +98,12 @@ class DQMStreamStats : public DQMEDHarvester {
   void getDimensionZ(Dimension &d, MonitorElement *m);
 
   std::string workflow_;
-  std::string   child_;
+  std::string child_;
   std::string producer_;
   std::string dirName_;
   std::string fileBaseName_;
   bool dumpOnEndLumi_;
-  bool dumpOnEndRun_;
+  bool dumpOnEndJob_;
   std::string processName_;
 };
 

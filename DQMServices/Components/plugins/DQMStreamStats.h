@@ -19,14 +19,15 @@
 
 #include "FWCore/Framework/interface/stream/EDAnalyzer.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
+
 #include "DQMServices/Core/interface/DQMStore.h"
 #include "DQMServices/Core/interface/DQMEDHarvester.h"
 #include "DQMServices/Core/interface/MonitorElement.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-
-
 
 namespace dqmservices {
 
@@ -48,13 +49,16 @@ struct Dimension{
 class HistoEntry {
  public:
   std::string path;
-
   std::string name;
+
   const char *type;
   size_t bin_count = 0;
   size_t bin_size = 0;
   size_t extra = 0;
-  size_t total = 0;
+
+  mutable size_t total = 0;
+  mutable size_t total_count = 0;
+
   double entries = 0;
   int maxBin = 0, minBin = 0;
   double maxValue = 0, minValue = 0;
@@ -68,7 +72,6 @@ typedef std::set<HistoEntry> HistoStats;
 class DQMStreamStats : public DQMEDHarvester {
  public:
   DQMStreamStats(edm::ParameterSet const & iConfig);
-
   virtual ~DQMStreamStats();
 
   void dqmEndLuminosityBlock(DQMStore::IBooker &, DQMStore::IGetter &,
@@ -78,33 +81,25 @@ class DQMStreamStats : public DQMEDHarvester {
   void dqmEndJob(DQMStore::IBooker &iBooker,
                  DQMStore::IGetter &iGetter) override;
 
-  // analyze a single monitor element
-  HistoEntry analyze(MonitorElement *m);
-
-  // group summaries per folder
-  // void group(HistoStats& st);
+  static void fillDescriptions(edm::ConfigurationDescriptions &);
 
  protected:
   HistoStats collect(DQMStore::IGetter &iGetter);
+  std::string toString(boost::property_tree::ptree doc);
   void writeMemoryJson(const std::string &fn, const HistoStats &stats);
 
+  // analyze a single monitor element
+  HistoEntry analyze(MonitorElement *m);
+
  private:
-  std::string onlineOfflineFileName(const std::string &fileBaseName, const std::string &suffix,
-                                        const std::string &workflow, const std::string &child);
-  std::string toString(boost::property_tree::ptree doc);
-  std::string getStepName();
   void getDimensionX(Dimension &d, MonitorElement *m);
   void getDimensionY(Dimension &d, MonitorElement *m);
   void getDimensionZ(Dimension &d, MonitorElement *m);
 
-  std::string workflow_;
-  std::string child_;
-  std::string producer_;
-  std::string dirName_;
-  std::string fileBaseName_;
+  std::string filePrefix_;
+  int maxDepth_;
   bool dumpOnEndLumi_;
   bool dumpOnEndJob_;
-  std::string processName_;
 };
 
 }  // end of namespace

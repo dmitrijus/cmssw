@@ -20,6 +20,7 @@
 # include <stdlib.h>
 # include <cxxabi.h>
 # include <iosfwd>
+# include <functional>
 
 namespace edm { class DQMHttpSource; class ParameterSet; class ActivityRegistry;}
 namespace lat { class Regexp; }

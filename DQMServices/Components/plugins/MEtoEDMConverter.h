@@ -70,7 +70,7 @@ public:
   void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override {};
 
   template <class T>
-      void putData(T& iPutTo, bool iLumiOnly, uint32_t run, uint32_t lumi);
+  void putData(DQMStore::IGetter &g, T& iPutTo, bool iLumiOnly, uint32_t run, uint32_t lumi);
 
   using TagList = std::vector<uint32_t>;
 
@@ -78,11 +78,7 @@ private:
   std::string fName;
   int verbosity;
   int frequency;
-  bool deleteAfterCopy;
-  bool enableMultiThread_;
   std::string path;
-
-  DQMStore* dbe;
 
   // private statistics information
   std::map<int,int> iCount;
